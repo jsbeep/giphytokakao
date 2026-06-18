@@ -21,8 +21,10 @@ function GifActionButton({
 			type="button"
 			aria-label={label}
 			onClick={(e) => { e.stopPropagation(); onClick(e) }}
-			className="flex h-7 w-7 items-center justify-center rounded-full border-0 p-0 text-(--ink) backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.18)]"
-			animate={{ backgroundColor: active ? '#fae100' : 'rgba(255,255,255,0.7)' }}
+			className="flex h-7 w-7 items-center justify-center rounded-full border-0 p-0 backdrop-blur-md text-[#ffffffe0] shadow-[0_2px_10px_rgba(0,0,0,0.18)]"
+			animate={{ backgroundColor: active ? '#fae100' : 'rgba(255,255,255,0.7)',
+				color: active ? '#ffffffe0' : 'var(--ink)',
+			 }}
 			whileHover={active ? undefined : { backgroundColor: 'rgba(255,255,255,0.9)' }}
 			whileTap={{ scale: 0.7 }}
 			transition={{ duration: 0.2, ease: 'easeOut' }}

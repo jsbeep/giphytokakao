@@ -4,10 +4,40 @@ import { logMetric } from './_metrics'
 const TREND_LIMIT = 15
 const SEARCH_LIMIT = 8
 
+// Persists for the lifetime of a warm function instance so rotation
+// continues from where the previous request left off.
+let currentKeyIndex = 0
+
 const sendJson = (res: ServerResponse, status: number, body: unknown) => {
   res.statusCode = status
   res.setHeader('Content-Type', 'application/json')
   res.end(JSON.stringify(body))
+}
+
+const parseApiKeys = (apiKey: string) =>
+  apiKey
+    .split(',')
+    .map((key) => key.trim())
+    .filter(Boolean)
+
+const isKeyExhausted = (status: number) => status === 429 || status === 401 || status === 403
+
+const fetchWithKeyRotation = async (apiKeys: string[], buildUrl: (key: string) => string) => {
+  let response: Response | null = null
+
+  for (let attempt = 0; attempt < apiKeys.length; attempt++) {
+    const keyIndex = currentKeyIndex % apiKeys.length
+    response = await fetch(buildUrl(apiKeys[keyIndex]))
+
+    if (!isKeyExhausted(response.status)) {
+      return response
+    }
+
+    logMetric('api_key_exhausted', { keyIndex, status: response.status })
+    currentKeyIndex = (keyIndex + 1) % apiKeys.length
+  }
+
+  return response
 }
 
 export const handleGiphyRequest = async (
@@ -15,7 +45,8 @@ export const handleGiphyRequest = async (
   res: ServerResponse,
   apiKey: string | undefined,
 ) => {
-  if (!apiKey) {
+  const apiKeys = parseApiKeys(apiKey || '')
+  if (apiKeys.length === 0) {
     sendJson(res, 500, { error: 'API_KEY_MISSING' })
     return
   }
@@ -25,36 +56,37 @@ export const handleGiphyRequest = async (
 
   logMetric('api_call', { type })
 
-  let upstreamUrl: string
+  let buildUrl: (key: string) => string
   if (type === 'trending') {
     logMetric('trending_call')
-    const params = new URLSearchParams({
-      api_key: apiKey,
-      limit: String(TREND_LIMIT),
-      rating: 'g',
-    })
-    upstreamUrl = `https://api.giphy.com/v1/gifs/trending?${params.toString()}`
+    buildUrl = (key) => {
+      const params = new URLSearchParams({ api_key: key, limit: String(TREND_LIMIT), rating: 'g' })
+      return `https://api.giphy.com/v1/gifs/trending?${params.toString()}`
+    }
   } else if (type === 'search') {
     const q = url.searchParams.get('q') || ''
     logMetric('search_call', { query: q })
-    const params = new URLSearchParams({
-      api_key: apiKey,
-      q,
-      limit: String(SEARCH_LIMIT),
-      rating: 'g',
-    })
-    upstreamUrl = `https://api.giphy.com/v1/gifs/search?${params.toString()}`
+    buildUrl = (key) => {
+      const params = new URLSearchParams({ api_key: key, q, limit: String(SEARCH_LIMIT), rating: 'g' })
+      return `https://api.giphy.com/v1/gifs/search?${params.toString()}`
+    }
   } else if (type === 'gif') {
     const id = url.searchParams.get('id') || ''
-    const params = new URLSearchParams({ api_key: apiKey })
-    upstreamUrl = `https://api.giphy.com/v1/gifs/${encodeURIComponent(id)}?${params.toString()}`
+    buildUrl = (key) => {
+      const params = new URLSearchParams({ api_key: key })
+      return `https://api.giphy.com/v1/gifs/${encodeURIComponent(id)}?${params.toString()}`
+    }
   } else {
     sendJson(res, 400, { error: 'INVALID_REQUEST' })
     return
   }
 
   try {
-    const upstreamRes = await fetch(upstreamUrl)
+    const upstreamRes = await fetchWithKeyRotation(apiKeys, buildUrl)
+    if (!upstreamRes) {
+      sendJson(res, 502, { error: 'UPSTREAM_ERROR' })
+      return
+    }
     const data = await upstreamRes.json()
     sendJson(res, upstreamRes.status, data)
   } catch {
