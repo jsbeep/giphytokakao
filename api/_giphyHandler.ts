@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import { logMetric } from './_metrics'
 
 const TREND_LIMIT = 15
 const SEARCH_LIMIT = 8
@@ -22,8 +23,11 @@ export const handleGiphyRequest = async (
   const url = new URL(req.url || '', 'http://internal')
   const type = url.searchParams.get('type')
 
+  logMetric('api_call', { type })
+
   let upstreamUrl: string
   if (type === 'trending') {
+    logMetric('trending_call')
     const params = new URLSearchParams({
       api_key: apiKey,
       limit: String(TREND_LIMIT),
@@ -32,6 +36,7 @@ export const handleGiphyRequest = async (
     upstreamUrl = `https://api.giphy.com/v1/gifs/trending?${params.toString()}`
   } else if (type === 'search') {
     const q = url.searchParams.get('q') || ''
+    logMetric('search_call', { query: q })
     const params = new URLSearchParams({
       api_key: apiKey,
       q,

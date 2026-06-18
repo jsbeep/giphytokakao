@@ -1,5 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans+KR:wght@300;400;600&display=swap');
 @import 'tailwindcss';
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #dbdbd1; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #afae9c; }
 
 :root {
   --bg: #ffffff;

@@ -14,12 +14,11 @@ import { useGiphy } from './hooks/useGiphy'
 import { useGifStorage } from './hooks/useGifStorage'
 import { useKakaoShare } from './hooks/useKakaoShare'
 import DiceButton from './components/DiceButton'
-import './App.css'
+import { heroActionClass } from './components/HeroActionButton'
 
 function App() {
   const [inputValue, setInputValue] = useState('')
   const [showHelp, setShowHelp] = useState(false)
-  const [hoveredGifId, setHoveredGifId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'recent' | 'favorites' | 'results'>(
     'results',
   )
@@ -116,12 +115,6 @@ function App() {
     }
   }, [isSendMode, maxOffset])
 
-  useEffect(() => {
-    if (isDragging) {
-      setHoveredGifId(null)
-    }
-  }, [isDragging])
-
   const resetToHome = () => {
     setActiveTab('results')
     setIsSendMode(false)
@@ -138,8 +131,8 @@ function App() {
     void runSearch(inputValue)
   }
 
-  const heroActionClass =
-    'grid h-7.5 w-11 place-items-center rounded-full border border-(--border) bg-(--bg) p-0 text-[var(--ink)] shadow-(--sharp-shadow) transition-all duration-200 ease-out hover:-translate-y-0.5 hover:scale-105 hover:border-white/60 hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent active:scale-95 sm:h-12 sm:w-12'
+  const heroLinkClass =
+    `${heroActionClass} transition-all duration-200 ease-out hover:-translate-y-0.5 hover:scale-105 hover:border-white/60 hover:bg-white/25 active:scale-95`
 
     const ratio = featuredGif ? featuredGif.originalHeight / featuredGif.originalWidth : 1
     const isTall = ratio > 1.2
@@ -155,27 +148,27 @@ function App() {
         <div className="absolute top-16 left-[-4rem] h-40 w-40 rounded-full bg-[rgba(20,16,8,0.09)] blur-3xl" />
         <div className="absolute right-[-3rem] top-[28vh] h-52 w-52 rounded-full bg-[rgba(20,16,8,0.08)] blur-3xl" />
       </div>
-      <header className="hero-shell">
-        <div className='hero-top'>
-          <div className="hero-copy">
+      <header className="flex w-[min(100%,560px)] h-dvh flex-col gap-4">
+        <div className="grid grid-cols-1 min-[521px]:grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
+          <div className="flex min-w-0 flex-col gap-2">
 
-            <p className="hero-eyebrow mono">gif search / share</p>
-            <h1 className={`hero-title ${isSendMode ? 'text-[clamp(1rem,13vw,6rem)]' : 'max-w-[8ch] text-[clamp(3.1rem,16vw,5.9rem)]'}`}>
-              Old and <span className="hero-title-em">Sick</span> <span className="text-[#fae100] text-shadow-md text-shadow-yellow-600/25">Kakao</span>
+            <p className="mono w-fit rounded-full border border-(--border) bg-(--surface) px-[0.65rem] py-[0.35rem] text-[0.68rem] text-(--muted) shadow-(--sharp-shadow)">gif search / share</p>
+            <h1 className={`m-0 font-(--heading-font) leading-[0.86] tracking-[-0.06em] text-balance text-(--ink) ${isSendMode ? 'text-[clamp(1rem,13vw,6rem)]' : 'max-w-[8ch] text-[clamp(3.1rem,16vw,5.9rem)]'}`}>
+              Old and <span className="inline-block italic -translate-y-[0.02em]">Sick</span> <span className="text-[#fae100] text-shadow-md text-shadow-yellow-600/25">Kakao</span>
             </h1>
-            {!isSendMode && <p className="hero-meta mono">fossil / relic / Luddite</p>}
+            {!isSendMode && <p className="mono w-fit text-[0.72rem] text-(--muted) opacity-[0.82]">fossil / relic / Luddite</p>}
             {!isSendMode && (
-              <p className="hero-desc">
+              <p className="max-w-[26ch] text-[0.92rem] text-white opacity-85">
                 GIF를 검색해서 탭 한 번으로 카카오톡에 공유하세요.
               </p>
             )}
           </div>
           {!isSendMode &&
-            <div className="hero-art" aria-hidden="true">
+            <div className="flex relative flex-col justify-center items-center pt-[15dvh]">
 
 
               <a
-                className={`${heroActionClass} absolute bottom-10 h-8! w-8! no-select`}
+                className={`${heroLinkClass} absolute bottom-10 h-8! w-8! no-select`}
                 href="https://github.com/jsb0315?tab=repositories"
                 target="_blank"
                 rel="noreferrer"
@@ -245,8 +238,6 @@ function App() {
           gifs={gifs}
           recent={recent}
           favorites={favorites}
-          hoveredGifId={hoveredGifId}
-          onHoverGif={setHoveredGifId}
 
           onShareGif={handleShare}
           onAddRecent={addRecent}

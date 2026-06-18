@@ -2,7 +2,7 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/hacker.jpg" />
+    <link rel="icon" type="image/jpeg" href="/hacker.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Old and Sick Kakao | GIF 검색해서 카카오톡으로 공유</title>
     <meta
@@ -10,6 +10,26 @@
       content="GIF를 검색해서 탭 한 번으로 카카오톡에 공유하세요."
     />
     <link rel="canonical" href="https://giphytokakao.vercel.app/" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans+KR:wght@300;400;600&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans+KR:wght@300;400;600&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans+KR:wght@300;400;600&display=swap"
+      />
+    </noscript>
 
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ko_KR" />
@@ -26,10 +46,63 @@
       name="twitter:description"
       content="GIF를 검색해서 탭 한 번으로 카카오톡에 공유하세요."
     />
+
+    <style>
+      #initial-loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        background: #ffffff;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+      #initial-loader h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        color: #07080a;
+      }
+      #initial-loader .accent {
+        color: #fae100;
+        text-shadow: 1px 1px 6px rgba(21, 16, 8, 0.14);
+      }
+      #initial-loader .bar-track {
+        width: 160px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(7, 8, 10, 0.12);
+        overflow: hidden;
+      }
+      #initial-loader .bar-fill {
+        width: 40%;
+        height: 100%;
+        border-radius: 999px;
+        background: #07080a;
+        animation: initial-loader-slide 1.1s ease-in-out infinite;
+      }
+      @keyframes initial-loader-slide {
+        0% {
+          transform: translateX(-120%);
+        }
+        100% {
+          transform: translateX(260%);
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
+    <div id="root">
+      <div id="initial-loader">
+        <h1>Old and <span class="accent">Sick</span> Kakao</h1>
+        <div class="bar-track">
+          <div class="bar-fill"></div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

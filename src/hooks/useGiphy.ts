@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ApiAlert, GifItem, errorType } from '../types/types'
 import { delay, mapGifs } from '../utils/giphy'
+import { giphyCache } from '../utils/giphyCache'
 
 const MIN_LOADING_TIME = 300
 
@@ -56,11 +57,19 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
   const loadTrending = async (preserveUrl = false) => {
     setError(null)
     setApiAlert(null)
-    setIsLoading(true)
     if (!preserveUrl) {
       options.onUpdateUrl?.('')
     }
 
+    const cached = giphyCache.getTrending()
+    if (cached) {
+      setGifs(cached)
+      setKeywords(cached.map((item) => item.title).slice(0, 10))
+      setActiveQuery('')
+      return
+    }
+
+    setIsLoading(true)
     try {
       const fetchPromise = fetch('/api/giphy?type=trending').then(async (response) => {
         handleApiResponse(response)
@@ -69,6 +78,7 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
         setGifs(items)
         setKeywords(items.map((item) => item.title).slice(0, 10))
         setActiveQuery('')
+        giphyCache.setTrending(items)
       })
 
       await Promise.all([fetchPromise, delay(MIN_LOADING_TIME)])
@@ -92,9 +102,19 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
     setFeaturedGif(null)
     setError(null)
     setApiAlert(null)
-    setIsLoading(true)
     options.onUpdateUrl?.(trimmed)
 
+    const cached = giphyCache.getSearch(trimmed)
+    if (cached) {
+      if (cached.length === 0) {
+        setError('NO_RESULT')
+      }
+      setGifs(cached)
+      setActiveQuery(trimmed)
+      return
+    }
+
+    setIsLoading(true)
     try {
       const params = new URLSearchParams({ type: 'search', q: trimmed })
       const fetchPromise = fetch(`/api/giphy?${params.toString()}`).then(async (response) => {
@@ -106,6 +126,7 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
         }
         setGifs(items)
         setActiveQuery(trimmed)
+        giphyCache.setSearch(trimmed, items)
       })
 
       await Promise.all([fetchPromise, delay(MIN_LOADING_TIME)])
