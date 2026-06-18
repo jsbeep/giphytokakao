@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { handleGiphyRequest } from './_giphyHandler'
+import { handleGiphyRequest } from './_giphyHandler.js'
 
 const parseLimit = (value: string | undefined) => {
   const parsed = Number(value)

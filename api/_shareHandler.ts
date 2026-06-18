@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { logMetric } from './_metrics'
+import { logMetric } from './_metrics.js'
 
 export const handleShareRequest = (req: IncomingMessage, res: ServerResponse) => {
   const url = new URL(req.url || '', 'http://internal')

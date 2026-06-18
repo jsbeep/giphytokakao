@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { logMetric } from './_metrics'
+import { logMetric } from './_metrics.js'
 
 const DEFAULT_TREND_LIMIT = 15
 const DEFAULT_SEARCH_LIMIT = 8
