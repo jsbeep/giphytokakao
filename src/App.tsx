@@ -164,6 +164,11 @@ function App() {
               Old and <span className="hero-title-em">Sick</span> <span className="text-[#fae100] text-shadow-md text-shadow-yellow-600/25">Kakao</span>
             </h1>
             {!isSendMode && <p className="hero-meta mono">fossil / relic / Luddite</p>}
+            {!isSendMode && (
+              <p className="hero-desc">
+                GIF를 검색해서 탭 한 번으로 카카오톡에 공유하세요.
+              </p>
+            )}
           </div>
           {!isSendMode &&
             <div className="hero-art" aria-hidden="true">
@@ -217,44 +222,46 @@ function App() {
         <div className="h-[15dvh]" />
       </header>
 
-      <DragSheet
-        sheetRef={sheetRef}
-        sheetOffset={sheetOffset}
-        isDragging={isDragging}
-        startDrag={startDrag}
-        handlePointerMove={handlePointerMove}
-        finishDrag={finishDrag}
+      <main className="w-full flex-1">
+        <DragSheet
+          sheetRef={sheetRef}
+          sheetOffset={sheetOffset}
+          isDragging={isDragging}
+          startDrag={startDrag}
+          handlePointerMove={handlePointerMove}
+          finishDrag={finishDrag}
 
-        inputValue={inputValue}
-        inputRef={inputRef}
-        activeQuery={activeQuery}
-        onInputChange={setInputValue}
-        onSubmit={handleSubmit}
-        onClearInput={() => { setInputValue(''); inputRef.current?.focus() }}
-        onHomeClick={resetToHome}
+          inputValue={inputValue}
+          inputRef={inputRef}
+          activeQuery={activeQuery}
+          onInputChange={setInputValue}
+          onSubmit={handleSubmit}
+          onClearInput={() => { setInputValue(''); inputRef.current?.focus() }}
+          onHomeClick={resetToHome}
 
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
 
-        gifs={gifs}
-        recent={recent}
-        favorites={favorites}
-        hoveredGifId={hoveredGifId}
-        onHoverGif={setHoveredGifId}
+          gifs={gifs}
+          recent={recent}
+          favorites={favorites}
+          hoveredGifId={hoveredGifId}
+          onHoverGif={setHoveredGifId}
 
-        onShareGif={handleShare}
-        onAddRecent={addRecent}
-        onRemoveRecent={removeRecent}
-        onToggleFavorite={toggleFavorite}
-        isFavorite={isFavorite}
-        setShowHelp={setShowHelp}
-        moveToMid={moveToMid}
+          onShareGif={handleShare}
+          onAddRecent={addRecent}
+          onRemoveRecent={removeRecent}
+          onToggleFavorite={toggleFavorite}
+          isFavorite={isFavorite}
+          setShowHelp={setShowHelp}
+          moveToMid={moveToMid}
 
-        showHelp={showHelp}
-        isLoading={isLoading}
-        apiAlert={apiAlert}
-        error={error}
-      />
+          showHelp={showHelp}
+          isLoading={isLoading}
+          apiAlert={apiAlert}
+          error={error}
+        />
+      </main>
       <Analytics />
     </div>
   )

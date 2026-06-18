@@ -2,9 +2,6 @@ import { useState } from 'react'
 import type { ApiAlert, GifItem, errorType } from '../types/types'
 import { delay, mapGifs } from '../utils/giphy'
 
-const GIPHY_API_KEY = import.meta.env.VITE_GIPHY_API_KEY || 'API KEY'
-const TREND_LIMIT = 15
-const SEARCH_LIMIT = 8
 const MIN_LOADING_TIME = 300
 
 type UseGiphyOptions = {
@@ -57,12 +54,6 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
   }
 
   const loadTrending = async (preserveUrl = false) => {
-    if (!GIPHY_API_KEY) {
-      setError('API_KEY_MISSING')
-      setInvalidKeyAlert()
-      return
-    }
-
     setError(null)
     setApiAlert(null)
     setIsLoading(true)
@@ -71,14 +62,7 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
     }
 
     try {
-      const params = new URLSearchParams({
-        api_key: GIPHY_API_KEY,
-        limit: String(TREND_LIMIT),
-        rating: 'g',
-      })
-      const fetchPromise = fetch(
-        `https://api.giphy.com/v1/gifs/trending?${params.toString()}`,
-      ).then(async (response) => {
+      const fetchPromise = fetch('/api/giphy?type=trending').then(async (response) => {
         handleApiResponse(response)
         const json = await response.json()
         const items = mapGifs(json.data || [])
@@ -96,12 +80,6 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
   }
 
   const runSearch = async (query: string) => {
-    if (!GIPHY_API_KEY) {
-      setError('API_KEY_MISSING')
-      setInvalidKeyAlert()
-      return
-    }
-
     const trimmed = query.trim()
     if (!trimmed) {
       setIsSendMode(false)
@@ -118,15 +96,8 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
     options.onUpdateUrl?.(trimmed)
 
     try {
-      const params = new URLSearchParams({
-        api_key: GIPHY_API_KEY,
-        q: trimmed,
-        limit: String(SEARCH_LIMIT),
-        rating: 'g',
-      })
-      const fetchPromise = fetch(
-        `https://api.giphy.com/v1/gifs/search?${params.toString()}`,
-      ).then(async (response) => {
+      const params = new URLSearchParams({ type: 'search', q: trimmed })
+      const fetchPromise = fetch(`/api/giphy?${params.toString()}`).then(async (response) => {
         handleApiResponse(response)
         const json = await response.json()
         const items = mapGifs(json.data || [])
@@ -146,23 +117,13 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
   }
 
   const loadGifById = async (gifId: string) => {
-    if (!GIPHY_API_KEY) {
-      setError('API_KEY_MISSING')
-      setInvalidKeyAlert()
-      return
-    }
-
     setError(null)
     setApiAlert(null)
     setIsFeaturedLoading(true)
 
     try {
-      const params = new URLSearchParams({
-        api_key: GIPHY_API_KEY,
-      })
-      const response = await fetch(
-        `https://api.giphy.com/v1/gifs/${encodeURIComponent(gifId)}?${params.toString()}`,
-      )
+      const params = new URLSearchParams({ type: 'gif', id: gifId })
+      const response = await fetch(`/api/giphy?${params.toString()}`)
       handleApiResponse(response)
       const json = await response.json()
       const item = mapGifs([json.data || {}])[0]

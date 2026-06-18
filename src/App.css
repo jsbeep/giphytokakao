@@ -59,6 +59,14 @@
   opacity: 0.82;
 }
 
+.hero-desc {
+  max-width: 26ch;
+  color: var(--ink);
+  font-size: 0.92rem;
+  opacity: 0.85;
+  color: white;
+}
+
 .hero-art {
   display: flex;
   position: relative;
