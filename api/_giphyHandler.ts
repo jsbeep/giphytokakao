@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { logMetric } from './_metrics'
 
-const TREND_LIMIT = 15
-const SEARCH_LIMIT = 8
+const DEFAULT_TREND_LIMIT = 15
+const DEFAULT_SEARCH_LIMIT = 8
 
 // Persists for the lifetime of a warm function instance so rotation
 // continues from where the previous request left off.
@@ -40,11 +40,18 @@ const fetchWithKeyRotation = async (apiKeys: string[], buildUrl: (key: string) =
   return response
 }
 
+export type GiphyHandlerConfig = {
+  apiKey: string | undefined
+  trendLimit?: number
+  searchLimit?: number
+}
+
 export const handleGiphyRequest = async (
   req: IncomingMessage,
   res: ServerResponse,
-  apiKey: string | undefined,
+  config: GiphyHandlerConfig,
 ) => {
+  const { apiKey, trendLimit = DEFAULT_TREND_LIMIT, searchLimit = DEFAULT_SEARCH_LIMIT } = config
   const apiKeys = parseApiKeys(apiKey || '')
   if (apiKeys.length === 0) {
     sendJson(res, 500, { error: 'API_KEY_MISSING' })
@@ -60,14 +67,14 @@ export const handleGiphyRequest = async (
   if (type === 'trending') {
     logMetric('trending_call')
     buildUrl = (key) => {
-      const params = new URLSearchParams({ api_key: key, limit: String(TREND_LIMIT), rating: 'g' })
+      const params = new URLSearchParams({ api_key: key, limit: String(trendLimit), rating: 'g' })
       return `https://api.giphy.com/v1/gifs/trending?${params.toString()}`
     }
   } else if (type === 'search') {
     const q = url.searchParams.get('q') || ''
     logMetric('search_call', { query: q })
     buildUrl = (key) => {
-      const params = new URLSearchParams({ api_key: key, q, limit: String(SEARCH_LIMIT), rating: 'g' })
+      const params = new URLSearchParams({ api_key: key, q, limit: String(searchLimit), rating: 'g' })
       return `https://api.giphy.com/v1/gifs/search?${params.toString()}`
     }
   } else if (type === 'gif') {
