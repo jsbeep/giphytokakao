@@ -1,7 +1,7 @@
 import type { GifItem } from '../types/types'
 
 const CACHE_KEY = 'giphytokakao:apiCache'
-export const CACHE_TTL_MS = 5 * 60 * 1000
+const CACHE_TTL_MS = 5 * 60 * 1000
 const SEARCH_CACHE_LIMIT = Number(import.meta.env.VITE_SEARCH_CACHE_LIMIT) || 5
 
 type SearchCacheEntry = {

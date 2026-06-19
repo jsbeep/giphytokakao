@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { ApiAlert, GifItem, errorType } from '../types/types'
 import { delay, mapGifs } from '../utils/giphy'
-import { CACHE_TTL_MS, giphyCache } from '../utils/giphyCache'
+import { giphyCache } from '../utils/giphyCache'
 
 const MIN_LOADING_TIME = 300
 
@@ -164,24 +164,6 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
     }
   }
 
-  /** renders a shared gif straight from the Kakao link payload — no /api/giphy round trip */
-  const hydrateFromShare = (gif: GifItem, trending: GifItem[], sharedAt: number) => {
-    setError(null)
-    setApiAlert(null)
-    setFeaturedGif(gif)
-    options.onFeaturedTitle?.(gif.title)
-
-    const isFresh = trending.length > 0 && Date.now() - sharedAt <= CACHE_TTL_MS
-    if (isFresh) {
-      setGifs(trending)
-      setKeywords(trending.map((item) => item.title).slice(0, 10))
-      setActiveQuery('')
-    } else {
-      // sharer's trending snapshot is too old to show as-is — fetch a fresh one instead
-      void loadTrending(true)
-    }
-  }
-
   return {
     gifs,
     keywords,
@@ -197,7 +179,6 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
     loadTrending,
     runSearch,
     loadGifById,
-    hydrateFromShare,
     setError,
   }
 }

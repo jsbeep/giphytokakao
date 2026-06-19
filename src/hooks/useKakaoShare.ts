@@ -1,8 +1,6 @@
 import { useEffect } from 'react'
 import type { GifItem } from '../types/types'
 import { getTemplateIdForGif } from '../utils/kakao'
-import { giphyCache } from '../utils/giphyCache'
-import { encodeSharePayload } from '../utils/sharePayload'
 
 const KAKAO_APP_KEY = import.meta.env.VITE_KAKAO_APP_KEY || 'APP KEY'
 const KAKAO_SDK_SRC = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js'
@@ -66,9 +64,7 @@ export const useKakaoShare = (options: UseKakaoShareOptions = {}) => {
       kakao.init(KAKAO_APP_KEY)
     }
 
-    // bundle gif + sharer's trending list + timestamp so the receiving page never has to call /api/giphy
-    const payload = encodeSharePayload(gif, giphyCache.getTrending() ?? [])
-    const shareParams = `?p=${payload}`
+    const shareParams = `?send=${encodeURIComponent(gif.id)}`
 
     kakao.Share.sendCustom({
       templateId: getTemplateIdForGif(gif),
