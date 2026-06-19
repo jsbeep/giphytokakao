@@ -15,6 +15,7 @@ import { useGifStorage } from './hooks/useGifStorage'
 import { useKakaoShare } from './hooks/useKakaoShare'
 import DiceButton from './components/DiceButton'
 import { heroActionClass } from './components/HeroActionButton'
+import { decodeSharePayload } from './utils/sharePayload'
 
 function App() {
   const [inputValue, setInputValue] = useState('')
@@ -44,6 +45,7 @@ function App() {
     loadTrending,
     runSearch,
     loadGifById,
+    hydrateFromShare,
     setError,
   } = useGiphy({
     onUpdateUrl: updateUrl,
@@ -78,11 +80,21 @@ function App() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const queryParam = params.get('q')?.trim() || ''
+    const payloadParam = params.get('p')?.trim() || ''
     const sendParam = params.get('send')?.trim() || ''
     const sendId = sendParam ? decodeURIComponent(sendParam) : ''
     const initialQuery = queryParam
     setInputValue(initialQuery)
 
+    const sharePayload = payloadParam ? decodeSharePayload(payloadParam) : null
+    if (sharePayload) {
+      setIsSendMode(true)
+      snapTo('collapsed')
+      hydrateFromShare(sharePayload.gif, sharePayload.trending, sharePayload.ts)
+      return
+    }
+
+    // legacy links from before the bundled-payload share format — still resolve via API
     if (sendId) {
       setIsSendMode(true)
       snapTo('collapsed')

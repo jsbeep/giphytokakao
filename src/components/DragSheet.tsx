@@ -122,6 +122,9 @@ export default function DragSheet({
 					setShowHelp(false)
 					moveToMid()
 					onTabChange('results')
+					// focus must stay synchronous (in the click's call stack) or iOS Safari drops the keyboard entirely;
+					// preventScroll stops Safari's own scroll-into-view from fighting the sheet's slide-up animation
+					inputRef.current?.focus({ preventScroll: true })
 				}}
 				onHelpClick={() => {
 					moveToMid()

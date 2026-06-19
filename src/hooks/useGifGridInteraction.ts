@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { GifItem } from '../types/types'
 
-const SEND_HIGHLIGHT_MS = 850
+const SEND_HIGHLIGHT_MS = 1200
 
 type UseGifGridInteractionOptions = {
   onShareGif: (gif: GifItem) => void

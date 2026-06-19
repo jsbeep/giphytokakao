@@ -1,7 +1,7 @@
 import type { GifItem } from '../types/types'
 
 const CACHE_KEY = 'giphytokakao:apiCache'
-const CACHE_TTL_MS = 5 * 60 * 1000
+export const CACHE_TTL_MS = 5 * 60 * 1000
 const SEARCH_CACHE_LIMIT = Number(import.meta.env.VITE_SEARCH_CACHE_LIMIT) || 5
 
 type SearchCacheEntry = {
@@ -59,7 +59,31 @@ const writeCache = (cache: Omit<GiphyCache, 'timestamp'>) => {
   }
 }
 
+/** ms left before the cached trending/search results expire (0 if expired or missing) */
+const getRemainingMs = (): number => {
+  if (!isBrowser()) {
+    return 0
+  }
+
+  try {
+    const raw = window.localStorage.getItem(CACHE_KEY)
+    if (!raw) {
+      return 0
+    }
+
+    const parsed = JSON.parse(raw) as GiphyCache
+    if (!parsed.timestamp) {
+      return 0
+    }
+
+    return Math.max(0, CACHE_TTL_MS - (Date.now() - parsed.timestamp))
+  } catch {
+    return 0
+  }
+}
+
 export const giphyCache = {
+  getRemainingMs,
   getTrending: (): GifItem[] | null => readCache().trending,
   setTrending: (items: GifItem[]) => {
     const cache = readCache()
