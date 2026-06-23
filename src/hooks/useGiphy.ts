@@ -147,7 +147,7 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
       const response = await fetch(`/api/giphy?${params.toString()}`)
       handleApiResponse(response)
       const json = await response.json()
-      const item = mapGifs([json.data || {}])[0]
+      const item = mapGifs([json.data || {}], true)[0]
       if (item) {
         setFeaturedGif(item)
         options.onFeaturedTitle?.(item.title)
