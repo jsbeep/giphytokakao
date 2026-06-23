@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { Analytics } from "@vercel/analytics/react"
 import DragSheet from './components/DragSheet'
+import InfoPage from './components/InfoPage'
 import { useBottomSheet } from './hooks/useBottomSheet'
 import { useGiphy } from './hooks/useGiphy'
 import { useGifStorage } from './hooks/useGifStorage'
@@ -19,6 +20,7 @@ import { heroActionClass } from './components/HeroActionButton'
 function App() {
   const [inputValue, setInputValue] = useState('')
   const [showHelp, setShowHelp] = useState(false)
+  const [showInfo, setShowInfo] = useState(false)
   const [activeTab, setActiveTab] = useState<'recent' | 'favorites' | 'results'>(
     'results',
   )
@@ -136,7 +138,7 @@ function App() {
 
     const ratio = featuredGif ? featuredGif.originalHeight / featuredGif.originalWidth : 1
     const isTall = ratio > 1.2
-    const imgClass = isTall ? 'max-h-[60dvh] w-auto' : 'max-w-[90vw] min-w-[75vw] h-auto'
+    const imgClass = isTall ? 'max-h-[60dvh] w-auto md:max-h-[80dvh]' : 'max-w-[90vw] min-w-[75vw] h-auto md:max-w-[60vw] md:min-w-[40vw]'
 
   return (
     <div className="box-border flex min-h-dvh flex-col items-center gap-8 pt-[2dvh] px-[5%]"
@@ -148,8 +150,10 @@ function App() {
         <div className="absolute top-16 left-[-4rem] h-40 w-40 rounded-full bg-[rgba(20,16,8,0.09)] blur-3xl" />
         <div className="absolute right-[-3rem] top-[28vh] h-52 w-52 rounded-full bg-[rgba(20,16,8,0.08)] blur-3xl" />
       </div>
+
+      {showInfo && <InfoPage onClose={() => setShowInfo(false)} />}
       <header className="flex w-[min(100%,560px)] h-dvh flex-col gap-4">
-        <div className="grid grid-cols-1 min-[521px]:grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
+        <div className="relative grid grid-cols-1 min-[521px]:grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
           <div className="flex min-w-0 flex-col gap-2">
 
             <p className="mono w-fit rounded-full border border-(--border) bg-(--surface) px-[0.65rem] py-[0.35rem] text-[0.68rem] text-(--muted) shadow-(--sharp-shadow)">gif search / share</p>
@@ -163,10 +167,19 @@ function App() {
               </p>
             )}
           </div>
+          
+          <a
+            href="#info"
+            onClick={(event) => {
+              event.preventDefault()
+              setShowInfo(true)
+            }}
+            className="mono absolute top-0 py-[0.35rem] right-[1%] z-20 text-[0.7rem] text-(--muted) underline decoration-dotted underline-offset-3 hover:text-(--ink)"
+          >
+            안내
+          </a>
           {!isSendMode &&
-            <div className="flex relative flex-col justify-center items-center pt-[15dvh]">
-
-
+            <div className="flex relative flex-col justify-center items-center pt-[10dvh]">
               <a
                 className={`${heroLinkClass} absolute bottom-10 h-8! w-8! no-select`}
                 href="https://github.com/jsb0315?tab=repositories"
