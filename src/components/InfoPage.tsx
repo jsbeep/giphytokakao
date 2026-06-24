@@ -79,7 +79,7 @@ export default function InfoPage({ onClose }: InfoPageProps) {
         </section>
 
         <p className="m-0 text-xs text-(--muted) opacity-80">
-          문의: jsbeep500@gmail.com · 최종 수정일 2026-06-23
+          문의: jsbeep500@gmail.com · 최종 수정일 2026-06-24
         </p>
       </div>
     </div>
