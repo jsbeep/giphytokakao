@@ -9,6 +9,14 @@ import {
 
 export const DEFAULT_TREND_LIMIT = 15
 export const DEFAULT_SEARCH_LIMIT = 8
+/** GIPHY beta keys return at most 50 results per search */
+const POOL_MAX_LIMIT = 50
+const GIPHY_MAX_OFFSET = 4999
+
+const clampInt = (value: string | null, min: number, max: number, fallback: number) => {
+  const parsed = Number.parseInt(value ?? '', 10)
+  return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback
+}
 
 // Persists for the lifetime of a warm function instance so rotation
 // continues from where the previous request left off.
@@ -99,6 +107,15 @@ export const handleGiphyRequest = async (
     const q = url.searchParams.get('q') || ''
     buildUrl = (key) => {
       const params = new URLSearchParams({ api_key: key, q, limit: String(searchLimit), rating: 'g' })
+      return `https://api.giphy.com/v1/gifs/search?${params.toString()}`
+    }
+  } else if (type === 'pool') {
+    // one wide search the browser keeps as a stash of dice rolls, so one quota hit covers many pops
+    const q = url.searchParams.get('q') || ''
+    const limit = clampInt(url.searchParams.get('limit'), 1, POOL_MAX_LIMIT, POOL_MAX_LIMIT)
+    const offset = clampInt(url.searchParams.get('offset'), 0, GIPHY_MAX_OFFSET, 0)
+    buildUrl = (key) => {
+      const params = new URLSearchParams({ api_key: key, q, limit: String(limit), offset: String(offset), rating: 'g' })
       return `https://api.giphy.com/v1/gifs/search?${params.toString()}`
     }
   } else if (type === 'gif') {

@@ -4,6 +4,7 @@ export type GiphyQuery =
   | { type: 'trending' }
   | { type: 'search'; q: string }
   | { type: 'gif'; id: string }
+  | { type: 'pool'; q: string; limit: number; offset: number }
 
 export type GiphyResponse = {
   response: Response
@@ -26,10 +27,13 @@ const directUrl = (query: GiphyQuery, apiKey: string) => {
       return `${GIPHY_API}/search?${new URLSearchParams({ api_key: apiKey, q: query.q, limit: String(__GIPHY_SEARCH_LIMIT__), rating: 'g' })}`
     case 'gif':
       return `${GIPHY_API}/${encodeURIComponent(query.id)}?${new URLSearchParams({ api_key: apiKey })}`
+    case 'pool':
+      return `${GIPHY_API}/search?${new URLSearchParams({ api_key: apiKey, q: query.q, limit: String(query.limit), offset: String(query.offset), rating: 'g' })}`
   }
 }
 
-const proxyUrl = (query: GiphyQuery) => `/api/giphy?${new URLSearchParams(query)}`
+const proxyUrl = (query: GiphyQuery) =>
+  `/api/giphy?${new URLSearchParams(Object.entries(query).map(([name, value]) => [name, String(value)]))}`
 
 /**
  * With a personal key the browser calls GIPHY directly, so the key never reaches this site's server.

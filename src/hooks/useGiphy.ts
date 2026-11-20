@@ -182,6 +182,25 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
     }
   }
 
+  /**
+   * A batch of GIFs for the dice stash. Throws like the loaders above and shows the alert for key/quota
+   * problems, unless quiet (a background top-up the user didn't ask for).
+   */
+  const fetchGifPool = async (
+    keyword: string,
+    limit: number,
+    offset: number,
+    { quiet = false }: { quiet?: boolean } = {},
+  ): Promise<GifItem[]> => {
+    const result = await fetchGiphy({ type: 'pool', q: keyword, limit, offset })
+    if (quiet && !result.response.ok) {
+      throw new Error('POOL_TOP_UP_FAILED')
+    }
+    await handleApiResponse(result)
+    const json = await result.response.json()
+    return mapGifs(json.data || [], true)
+  }
+
   return {
     gifs,
     keywords,
@@ -197,6 +216,7 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
     loadTrending,
     runSearch,
     loadGifById,
+    fetchGifPool,
     setError,
   }
 }

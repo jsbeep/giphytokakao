@@ -8,16 +8,20 @@ import {
   TriangleAlert,
 } from 'lucide-react'
 import { Analytics } from "@vercel/analytics/react"
+import { AnimatePresence } from 'framer-motion'
 import DragSheet from './components/DragSheet'
+import RandomGifCard from './components/RandomGifCard'
 import SettingsPage from './components/SettingsPage'
 import { useBottomSheet } from './hooks/useBottomSheet'
 import { useGiphy } from './hooks/useGiphy'
 import { useGifStorage } from './hooks/useGifStorage'
 import { useKakaoShare } from './hooks/useKakaoShare'
 import { usePersonalApiKey } from './hooks/usePersonalApiKey'
+import { useRandomGif, type RandomPick } from './hooks/useRandomGif'
 import DiceButton from './components/DiceButton'
 import GithubMark from './components/GithubMark'
 import { heroActionClass } from './components/HeroActionButton'
+import type { GifItem } from './types/types'
 
 const GITHUB_URL = import.meta.env.VITE_GITHUB_URL
 
@@ -51,6 +55,7 @@ function App() {
     loadTrending,
     runSearch,
     loadGifById,
+    fetchGifPool,
     setError,
   } = useGiphy({
     onUpdateUrl: updateUrl,
@@ -81,6 +86,19 @@ function App() {
     toggleFavorite,
     isFavorite,
   } = useGifStorage()
+
+  // dice: pops come from a stash of 50 GIFs in localStorage; holding it preloads the next one
+  const randomGifs = useRandomGif(fetchGifPool)
+  const [randomPick, setRandomPick] = useState<RandomPick | null>(null)
+
+  const popRandomGif = async () => {
+    setRandomPick(await randomGifs.take())
+  }
+
+  const shareRandomGif = (gif: GifItem) => {
+    void handleShare(gif)
+    addRecent(gif)
+  }
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -194,6 +212,21 @@ function App() {
           onClose={() => setShowSettings(false)}
         />
       )}
+      <AnimatePresence>
+        {randomPick && (
+          <RandomGifCard
+            key="random-gif"
+            gif={randomPick.gif}
+            keyword={randomPick.keyword}
+            isFavorite={isFavorite(randomPick.gif.id)}
+            onShare={() => shareRandomGif(randomPick.gif)}
+            onToggleFavorite={() => toggleFavorite(randomPick.gif)}
+            onRerollStart={randomGifs.prefetch}
+            onReroll={popRandomGif}
+            onClose={() => setRandomPick(null)}
+          />
+        )}
+      </AnimatePresence>
       <header className="flex w-[min(100%,560px)] h-dvh flex-col gap-4">
         <div className="relative grid grid-cols-1 min-[521px]:grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
           <div className="flex min-w-0 flex-col gap-2">
@@ -233,7 +266,7 @@ function App() {
                   <GithubMark size="90%" />
                 </a>
               )}
-              <DiceButton />
+              <DiceButton onChargeStart={randomGifs.prefetch} onPop={popRandomGif} />
             </div>
           }
         </div>

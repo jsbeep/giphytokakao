@@ -272,6 +272,7 @@ export default function SettingsPage({ apiKey, onSaveApiKey, onClearApiKey, onCl
                   <b className="text-(--ink)">기본 키</b>: {defaultQuotaText}
                 </li>
                 <li>같은 검색 결과는 이 기기에 5분 동안 저장돼서, 다시 불러와도 횟수가 줄지 않아요.</li>
+                <li>주사위는 GIF 50개를 한 번에 받아 이 기기에 저장해 두고 하나씩 꺼내 써서, 약 50번 뽑을 때 1회만 줄어요.</li>
               </ul>
             </details>
           </Section>
@@ -303,7 +304,7 @@ export default function SettingsPage({ apiKey, onSaveApiKey, onClearApiKey, onCl
               <li>
                 <b className="text-(--ink)">GIF 검색 및 공유 내용</b>: 검색어와 공유한 GIF 정보는 별도로 저장하지 않습니다.
               </li>
-              <li>최근 공유·즐겨찾기 목록은 이 기기의 브라우저 저장소(localStorage)에만 저장됩니다.</li>
+              <li>최근 공유·즐겨찾기 목록과 주사위용 GIF 목록은 이 기기의 브라우저 저장소(localStorage)에만 저장됩니다.</li>
               <li>
                 <b className="text-(--ink)">외부 서비스</b>: GIPHY(GIF 검색·제공), Kakao(카카오톡 공유), Vercel(호스팅·익명
                 방문 통계). 각 서비스에서 일어나는 정보 처리는 해당 회사의 개인정보처리방침을 따릅니다.
