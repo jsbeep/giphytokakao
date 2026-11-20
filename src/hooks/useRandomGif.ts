@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import type { GifItem } from '../types/types'
+import { preloadImage } from '../utils/giphy'
 import { gifPoolStorage, type PoolEntry } from '../utils/gifPoolStorage'
 import { RANDOM_KEYWORDS } from '../utils/randomKeywords'
 
@@ -42,15 +43,6 @@ const shuffle = <T>(items: T[]) => {
   }
   return copy
 }
-
-/** resolves once the image is in the browser cache (or failed), so the card opens with it drawn */
-const preloadImage = (src: string) =>
-  new Promise<void>((resolve) => {
-    const img = new Image()
-    img.onload = () => resolve()
-    img.onerror = () => resolve()
-    img.src = src
-  })
 
 /**
  * Random GIFs for the dice from a stash in localStorage: one search fills it with 50 GIFs and each pop

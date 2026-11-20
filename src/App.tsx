@@ -4,9 +4,6 @@ import {
   useState,
   type FormEvent,
 } from 'react'
-import {
-  TriangleAlert,
-} from 'lucide-react'
 import { Analytics } from "@vercel/analytics/react"
 import { AnimatePresence } from 'framer-motion'
 import DragSheet from './components/DragSheet'
@@ -22,8 +19,15 @@ import DiceButton from './components/DiceButton'
 import GithubMark from './components/GithubMark'
 import { heroActionClass } from './components/HeroActionButton'
 import type { GifItem } from './types/types'
+import { preloadImage } from './utils/giphy'
 
 const GITHUB_URL = import.meta.env.VITE_GITHUB_URL
+
+/** the GIF id a shared KakaoTalk link carries (?send=<id>) */
+const readSendId = () => {
+  const sendParam = new URLSearchParams(window.location.search).get('send')?.trim() || ''
+  return sendParam ? decodeURIComponent(sendParam) : ''
+}
 
 function App() {
   const [inputValue, setInputValue] = useState('')
@@ -47,11 +51,6 @@ function App() {
     isLoading,
     error,
     apiAlert,
-    featuredGif,
-    isFeaturedLoading,
-    isSendMode,
-    setIsSendMode,
-    setFeaturedGif,
     loadTrending,
     runSearch,
     loadGifById,
@@ -59,16 +58,12 @@ function App() {
     setError,
   } = useGiphy({
     onUpdateUrl: updateUrl,
-    onFeaturedTitle: setInputValue,
   })
 
   const {
     sheetOffset,
-    setSheetOffset,
-    maxOffset,
     isDragging,
     sheetRef,
-    snapTo,
     moveToMid,
     startDrag,
     handlePointerMove,
@@ -100,18 +95,28 @@ function App() {
     addRecent(gif)
   }
 
+  // a shared link pops its GIF in the dice's card over the home screen; Home (or closing it) leaves the link
+  const [sharedGif, setSharedGif] = useState<GifItem | null>(null)
+
+  const openSharedGif = async (gifId: string) => {
+    const gif = await loadGifById(gifId)
+    if (!gif) {
+      return
+    }
+    await preloadImage(gif.previewUrl)
+    // the visitor may have gone home or searched while it loaded
+    if (readSendId() === gifId) {
+      setSharedGif(gif)
+    }
+  }
+
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const queryParam = params.get('q')?.trim() || ''
-    const sendParam = params.get('send')?.trim() || ''
-    const sendId = sendParam ? decodeURIComponent(sendParam) : ''
-    const initialQuery = queryParam
+    const initialQuery = new URLSearchParams(window.location.search).get('q')?.trim() || ''
+    const sendId = readSendId()
     setInputValue(initialQuery)
 
     if (sendId) {
-      setIsSendMode(true)
-      snapTo('collapsed')
-      void loadGifById(sendId)
+      void openSharedGif(sendId)
       void loadTrending(true)
       return
     }
@@ -124,26 +129,9 @@ function App() {
     void loadTrending()
   }, [])
 
-  useEffect(() => {
-    if (isSendMode && maxOffset > 0) {
-      snapTo('collapsed')
-      const timer1 = window.setTimeout(() => {
-        setSheetOffset(maxOffset * 0.94)
-      }, 700)
-      const timer2 = window.setTimeout(() => {
-        snapTo('collapsed')
-      }, 1000)
-      return () => {
-        window.clearTimeout(timer1)
-        window.clearTimeout(timer2)
-      }
-    }
-  }, [isSendMode, maxOffset])
-
   const resetToHome = () => {
     setActiveTab('results')
-    setIsSendMode(false)
-    setFeaturedGif(null)
+    setSharedGif(null)
     setInputValue('')
     setShowHelp(false)
     updateUrl('')
@@ -156,11 +144,10 @@ function App() {
     if (!error || error === 'NO_RESULT') {
       return
     }
-    const params = new URLSearchParams(window.location.search)
-    const sendId = params.get('send')?.trim()
-    const query = params.get('q')?.trim()
+    const sendId = readSendId()
+    const query = new URLSearchParams(window.location.search).get('q')?.trim()
     if (sendId) {
-      void loadGifById(sendId)
+      void openSharedGif(sendId)
       void loadTrending(true)
       return
     }
@@ -189,10 +176,6 @@ function App() {
   const heroLinkClass =
     `${heroActionClass} transition-all duration-200 ease-out hover:-translate-y-0.5 hover:scale-105 hover:border-white/60 hover:bg-white/25 active:scale-95`
 
-    const ratio = featuredGif ? featuredGif.originalHeight / featuredGif.originalWidth : 1
-    const isTall = ratio > 1.2
-    const imgClass = isTall ? 'max-h-[60dvh] w-auto md:max-h-[80dvh]' : 'max-w-[90vw] min-w-[75vw] h-auto md:max-w-[60vw] md:min-w-[40vw]'
-
   return (
     <div className="box-border flex min-h-dvh flex-col items-center gap-8 pt-[2dvh] px-[5%]"
     // style={{
@@ -217,30 +200,31 @@ function App() {
           <RandomGifCard
             key="random-gif"
             gif={randomPick.gif}
-            keyword={randomPick.keyword}
-            isFavorite={isFavorite(randomPick.gif.id)}
-            onShare={() => shareRandomGif(randomPick.gif)}
-            onToggleFavorite={() => toggleFavorite(randomPick.gif)}
-            onRerollStart={randomGifs.prefetch}
-            onReroll={popRandomGif}
             onClose={() => setRandomPick(null)}
+            dice={{
+              keyword: randomPick.keyword,
+              isFavorite: isFavorite(randomPick.gif.id),
+              onShare: () => shareRandomGif(randomPick.gif),
+              onToggleFavorite: () => toggleFavorite(randomPick.gif),
+              onRerollStart: randomGifs.prefetch,
+              onReroll: popRandomGif,
+            }}
           />
         )}
+        {sharedGif && <RandomGifCard key="shared-gif" gif={sharedGif} onClose={resetToHome} />}
       </AnimatePresence>
       <header className="flex w-[min(100%,560px)] h-dvh flex-col gap-4">
         <div className="relative grid grid-cols-1 min-[521px]:grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
           <div className="flex min-w-0 flex-col gap-2">
 
             <p className="mono w-fit rounded-full border border-(--border) bg-(--surface) px-[0.65rem] py-[0.35rem] text-[0.68rem] text-(--muted) shadow-(--sharp-shadow)">gif search / share</p>
-            <h1 className={`m-0 font-(--heading-font) leading-[0.86] tracking-[-0.06em] text-balance text-(--ink) ${isSendMode ? 'text-[clamp(1rem,13vw,6rem)]' : 'max-w-[8ch] text-[clamp(3.1rem,16vw,5.9rem)]'}`}>
+            <h1 className="m-0 max-w-[8ch] font-(--heading-font) text-[clamp(3.1rem,16vw,5.9rem)] leading-[0.86] tracking-[-0.06em] text-balance text-(--ink)">
               Old and <span className="inline-block italic -translate-y-[0.02em]">Sick</span> <span className="text-[#fae100] text-shadow-md text-shadow-yellow-600/25">Kakao</span>
             </h1>
-            {!isSendMode && <p className="mono w-fit text-[0.72rem] text-(--muted) opacity-[0.82]">fossil / relic / Luddite</p>}
-            {!isSendMode && (
-              <p className="max-w-[26ch] text-[0.92rem] text-white opacity-85">
-                GIF를 검색해서 탭 한 번으로 카카오톡에 공유하세요.
-              </p>
-            )}
+            <p className="mono w-fit text-[0.72rem] text-(--muted) opacity-[0.82]">fossil / relic / Luddite</p>
+            <p className="max-w-[26ch] text-[0.92rem] text-white opacity-85">
+              GIF를 검색해서 탭 한 번으로 카카오톡에 공유하세요.
+            </p>
           </div>
           
           <a
@@ -253,56 +237,21 @@ function App() {
           >
             설정
           </a>
-          {!isSendMode &&
-            <div className="flex relative flex-col justify-center items-center pt-[10dvh]">
-              {GITHUB_URL && (
-                <a
-                  className={`${heroLinkClass} absolute bottom-10 h-8! w-8! no-select`}
-                  href={GITHUB_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="Github"
-                >
-                  <GithubMark size="90%" />
-                </a>
-              )}
-              <DiceButton onChargeStart={randomGifs.prefetch} onPop={popRandomGif} />
-            </div>
-          }
-        </div>
-        {isSendMode && <div className="flex h-full w-full items-center justify-center flex-1">
-          {(isFeaturedLoading || featuredGif) ? (
-          <div className=" h-full w-full flex items-center justify-center flex-1">
-            <div
-              className={
-                isFeaturedLoading
-                  ? 'm-[20%] flex items-center justify-center'
-                  : 'flex flex-col gap-2 rounded-md border border-[var(--border)] bg-[var(--surface-soft)] p-1 shadow-[var(--soft-shadow)]'
-              }
-            >
-              {isFeaturedLoading ? (
-                <div className="h-9 w-9 animate-spin rounded-full border-[3px] border-[var(--border)] border-t-[var(--accent)]" aria-hidden="true"></div>
-              ) : (
-                featuredGif && (
-                  <img
-                    src={featuredGif.previewUrl}
-                    alt={featuredGif.title}
-                    className={`block ${imgClass}`}
-                  />
-                )
-              )}
-            </div>
+          <div className="flex relative flex-col justify-center items-center pt-[10dvh]">
+            {GITHUB_URL && (
+              <a
+                className={`${heroLinkClass} absolute bottom-10 h-8! w-8! no-select`}
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Github"
+              >
+                <GithubMark size="90%" />
+              </a>
+            )}
+            <DiceButton onChargeStart={randomGifs.prefetch} onPop={popRandomGif} />
           </div>
-          ) : (
-          <TriangleAlert
-            size={48}
-            color="var(--muted)"
-            aria-hidden="true"
-            style={{ margin: '20%' }}
-          />
-          )}
-        </div>}
-
+        </div>
         <div className="h-[15dvh]" />
       </header>
 

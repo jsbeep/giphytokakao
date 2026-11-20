@@ -5,6 +5,15 @@ export const delay = (ms: number) =>
     setTimeout(resolve, ms)
   })
 
+/** resolves once the image is in the browser cache (or failed), so a card can open with it already drawn */
+export const preloadImage = (src: string) =>
+  new Promise<void>((resolve) => {
+    const img = new Image()
+    img.onload = () => resolve()
+    img.onerror = () => resolve()
+    img.src = src
+  })
+
 /** width / height of the GIF, or square when GIPHY left the size out */
 export const gifAspectRatio = (gif: Pick<GifItem, 'originalWidth' | 'originalHeight'>) =>
   gif.originalWidth > 0 && gif.originalHeight > 0 ? gif.originalWidth / gif.originalHeight : 1

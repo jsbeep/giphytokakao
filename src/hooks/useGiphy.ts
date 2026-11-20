@@ -8,7 +8,6 @@ const MIN_LOADING_TIME = 300
 
 type UseGiphyOptions = {
   onUpdateUrl?: (query: string) => void
-  onFeaturedTitle?: (title: string) => void
 }
 
 export const useGiphy = (options: UseGiphyOptions = {}) => {
@@ -18,9 +17,6 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<errorType>(null)
   const [apiAlert, setApiAlert] = useState<ApiAlert | null>(null)
-  const [featuredGif, setFeaturedGif] = useState<GifItem | null>(null)
-  const [isFeaturedLoading, setIsFeaturedLoading] = useState(false)
-  const [isSendMode, setIsSendMode] = useState(false)
 
   const fail = (code: string, alert?: ApiAlert): never => {
     if (alert) {
@@ -112,14 +108,10 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
   const runSearch = async (query: string) => {
     const trimmed = query.trim()
     if (!trimmed) {
-      setIsSendMode(false)
-      setFeaturedGif(null)
       void loadTrending()
       return
     }
 
-    setIsSendMode(false)
-    setFeaturedGif(null)
     setError(null)
     setApiAlert(null)
     options.onUpdateUrl?.(trimmed)
@@ -156,29 +148,24 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
     }
   }
 
-  const loadGifById = async (gifId: string) => {
+  /** one GIF by id (a shared link's); null when it can't be loaded, with the error shown like the loaders above */
+  const loadGifById = async (gifId: string): Promise<GifItem | null> => {
     setError(null)
     setApiAlert(null)
-    setIsFeaturedLoading(true)
 
     try {
       const result = await fetchGiphy({ type: 'gif', id: gifId })
       await handleApiResponse(result)
       const json = await result.response.json()
       const item = mapGifs([json.data || {}], true)[0]
-      if (item) {
-        setFeaturedGif(item)
-        options.onFeaturedTitle?.(item.title)
-      } else {
-        setFeaturedGif(null)
-        console.log('No GIF found for ID:', gifId)
+      if (!item) {
         setError('NO_RESULT')
+        return null
       }
+      return item
     } catch (err) {
-      setFeaturedGif(null)
       setError(err instanceof Error ? err.message : 'PLEASE_TRY_AGAIN')
-    } finally {
-      setIsFeaturedLoading(false)
+      return null
     }
   }
 
@@ -208,11 +195,6 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
     isLoading,
     error,
     apiAlert,
-    featuredGif,
-    isFeaturedLoading,
-    isSendMode,
-    setIsSendMode,
-    setFeaturedGif,
     loadTrending,
     runSearch,
     loadGifById,

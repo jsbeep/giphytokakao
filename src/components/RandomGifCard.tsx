@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Dices, LoaderCircle, Send, Star, X } from 'lucide-react'
+import { Dices, House, LoaderCircle, Send, Star, X } from 'lucide-react'
 import type { GifItem } from '../types/types'
+import { gifAspectRatio } from '../utils/giphy'
 
 const roundButtonClass =
 	'grid h-11 w-11 shrink-0 cursor-pointer place-items-center rounded-full border border-(--border) text-(--ink) shadow-(--sharp-shadow) transition-colors duration-200 disabled:cursor-progress'
@@ -14,8 +15,8 @@ const rerollErrorMessage = (err: unknown) => {
 	return 'GIF를 불러오지 못했어요. 잠시 후 다시 시도해주세요.'
 }
 
-interface RandomGifCardProps {
-	gif: GifItem
+/** what the dice's card shows under the GIF: its tag and title, and share / roll again / favorite */
+export interface DiceControls {
 	/** the search word this GIF came from, shown as a tag */
 	keyword: string
 	isFavorite: boolean
@@ -24,23 +25,21 @@ interface RandomGifCardProps {
 	/** pressing "again" starts fetching before the click lands */
 	onRerollStart: () => void
 	onReroll: () => Promise<void>
-	onClose: () => void
 }
 
-/** the GIF the dice popped: share it, roll again, or keep it */
-export default function RandomGifCard({
-	gif,
-	keyword,
-	isFavorite,
-	onShare,
-	onToggleFavorite,
-	onRerollStart,
-	onReroll,
-	onClose,
-}: RandomGifCardProps) {
-	const [isRerolling, setIsRerolling] = useState(false)
-	const [rerollError, setRerollError] = useState<string | null>(null)
+interface RandomGifCardProps {
+	gif: GifItem
+	/** backdrop tap, Escape and the corner button */
+	onClose: () => void
+	/**
+	 * the dice's pop: tag, title and buttons under the GIF, and an X in the corner. Without it (a GIF opened
+	 * from a shared link) the card is just the image, and the corner button is Home.
+	 */
+	dice?: DiceControls
+}
 
+/** a GIF popped over the home screen: the dice's pick, or the GIF a shared link points to */
+export default function RandomGifCard({ gif, onClose, dice }: RandomGifCardProps) {
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
 			if (event.key === 'Escape') {
@@ -50,6 +49,70 @@ export default function RandomGifCard({
 		window.addEventListener('keydown', handleKeyDown)
 		return () => window.removeEventListener('keydown', handleKeyDown)
 	}, [onClose])
+
+	return (
+		<motion.div
+			className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-[5%] backdrop-blur-sm"
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			exit={{ opacity: 0 }}
+			transition={{ duration: 0.18 }}
+			onClick={onClose}
+		>
+			<motion.div
+				role="dialog"
+				aria-modal="true"
+				aria-label={dice ? '랜덤 GIF' : '공유받은 GIF'}
+				className="relative flex w-[min(400px,100%)] flex-col gap-3 rounded-3xl border border-(--border) bg-(--surface-strong) p-3 text-(--ink) shadow-(--box-shadow)"
+				initial={{ scale: 0.2, opacity: 0, y: 160, rotate: -8 }}
+				animate={{ scale: 1, opacity: 1, y: 0, rotate: 0 }}
+				// bouncy pop on the way in, quick fade on the way out
+				exit={{ scale: 0.85, opacity: 0, y: 40, transition: { duration: 0.16, ease: 'easeIn' } }}
+				transition={{ type: 'spring', stiffness: 380, damping: 18 }}
+				onClick={(event) => event.stopPropagation()}
+			>
+				<div className="relative overflow-hidden rounded-2xl bg-(--input-bg)">
+					<AnimatePresence mode="popLayout" initial={false}>
+						<motion.img
+							key={gif.id}
+							src={gif.previewUrl}
+							alt={gif.title}
+							draggable={false}
+							style={{ aspectRatio: gifAspectRatio(gif) }}
+							className="block max-h-[55dvh] w-full select-none object-contain"
+							initial={{ scale: 0.5, opacity: 0 }}
+							animate={{ scale: 1, opacity: 1 }}
+							exit={{ scale: 1.15, opacity: 0 }}
+							transition={{ type: 'spring', stiffness: 420, damping: 22 }}
+						/>
+					</AnimatePresence>
+					<button
+						type="button"
+						onClick={onClose}
+						aria-label={dice ? '닫기' : '홈으로'}
+						className="absolute right-2 top-2 grid h-8 w-8 cursor-pointer place-items-center rounded-full border border-(--border) bg-(--bg) text-(--ink) shadow-(--sharp-shadow)"
+					>
+						{dice ? <X size={16} /> : <House size={16} />}
+					</button>
+				</div>
+
+				{dice && <DiceCardControls gif={gif} {...dice} />}
+			</motion.div>
+		</motion.div>
+	)
+}
+
+function DiceCardControls({
+	gif,
+	keyword,
+	isFavorite,
+	onShare,
+	onToggleFavorite,
+	onRerollStart,
+	onReroll,
+}: DiceControls & { gif: GifItem }) {
+	const [isRerolling, setIsRerolling] = useState(false)
+	const [rerollError, setRerollError] = useState<string | null>(null)
 
 	const reroll = async () => {
 		if (isRerolling) {
@@ -66,97 +129,49 @@ export default function RandomGifCard({
 		}
 	}
 
-	const aspectRatio =
-		gif.originalWidth > 0 && gif.originalHeight > 0 ? `${gif.originalWidth} / ${gif.originalHeight}` : '1 / 1'
-
 	return (
-		<motion.div
-			className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-[5%] backdrop-blur-sm"
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			exit={{ opacity: 0 }}
-			transition={{ duration: 0.18 }}
-			onClick={onClose}
-		>
-			<motion.div
-				role="dialog"
-				aria-modal="true"
-				aria-label="랜덤 GIF"
-				className="relative flex w-[min(400px,100%)] flex-col gap-3 rounded-3xl border border-(--border) bg-(--surface-strong) p-3 text-(--ink) shadow-(--box-shadow)"
-				initial={{ scale: 0.2, opacity: 0, y: 160, rotate: -8 }}
-				animate={{ scale: 1, opacity: 1, y: 0, rotate: 0 }}
-				// bouncy pop on the way in, quick fade on the way out
-				exit={{ scale: 0.85, opacity: 0, y: 40, transition: { duration: 0.16, ease: 'easeIn' } }}
-				transition={{ type: 'spring', stiffness: 380, damping: 18 }}
-				onClick={(event) => event.stopPropagation()}
-			>
-				<div className="relative overflow-hidden rounded-2xl bg-(--input-bg)">
-					<AnimatePresence mode="popLayout" initial={false}>
-						<motion.img
-							key={gif.id}
-							src={gif.previewUrl}
-							alt={gif.title}
-							draggable={false}
-							style={{ aspectRatio }}
-							className="block max-h-[55dvh] w-full select-none object-contain"
-							initial={{ scale: 0.5, opacity: 0 }}
-							animate={{ scale: 1, opacity: 1 }}
-							exit={{ scale: 1.15, opacity: 0 }}
-							transition={{ type: 'spring', stiffness: 420, damping: 22 }}
-						/>
-					</AnimatePresence>
-					<button
-						type="button"
-						onClick={onClose}
-						aria-label="닫기"
-						className="absolute right-2 top-2 grid h-8 w-8 cursor-pointer place-items-center rounded-full border border-(--border) bg-(--bg) text-(--ink) shadow-(--sharp-shadow)"
-					>
-						<X size={16} />
-					</button>
-				</div>
+		<>
+			<div className="flex min-w-0 items-center gap-2 px-1">
+				<span className="shrink-0 rounded-full border border-(--border) bg-(--bg) px-2.5 py-0.5 text-xs font-semibold text-(--ink)">
+					#{keyword}
+				</span>
+				<p className="m-0 min-w-0 truncate text-sm text-(--muted)">{gif.title}</p>
+			</div>
+			{rerollError && (
+				<p role="alert" className="m-0 px-1 text-xs leading-relaxed text-red-600">
+					{rerollError}
+				</p>
+			)}
 
-				<div className="flex min-w-0 items-center gap-2 px-1">
-					<span className="shrink-0 rounded-full border border-(--border) bg-(--bg) px-2.5 py-0.5 text-xs font-semibold text-(--ink)">
-						#{keyword}
-					</span>
-					<p className="m-0 min-w-0 truncate text-sm text-(--muted)">{gif.title}</p>
-				</div>
-				{rerollError && (
-					<p role="alert" className="m-0 px-1 text-xs leading-relaxed text-red-600">
-						{rerollError}
-					</p>
-				)}
-
-				<div className="flex items-center gap-2">
-					<button
-						type="button"
-						onClick={onShare}
-						className="flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#fae100] text-sm font-semibold text-[#191600] shadow-(--sharp-shadow)"
-					>
-						<Send size={16} />
-						카톡 공유
-					</button>
-					<button
-						type="button"
-						onPointerDown={onRerollStart}
-						onClick={() => void reroll()}
-						disabled={isRerolling}
-						aria-label="다시 굴리기"
-						className={`${roundButtonClass} bg-(--bg)`}
-					>
-						{isRerolling ? <LoaderCircle size={18} className="animate-spin" /> : <Dices size={18} />}
-					</button>
-					<button
-						type="button"
-						onClick={onToggleFavorite}
-						aria-label={isFavorite ? '즐겨찾기 해제' : '즐겨찾기'}
-						aria-pressed={isFavorite}
-						className={`${roundButtonClass} ${isFavorite ? 'bg-[#fae100]' : 'bg-(--bg)'}`}
-					>
-						<Star size={18} fill={isFavorite ? 'currentColor' : 'none'} />
-					</button>
-				</div>
-			</motion.div>
-		</motion.div>
+			<div className="flex items-center gap-2">
+				<button
+					type="button"
+					onClick={onShare}
+					className="flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#fae100] text-sm font-semibold text-[#191600] shadow-(--sharp-shadow)"
+				>
+					<Send size={16} />
+					카톡 공유
+				</button>
+				<button
+					type="button"
+					onPointerDown={onRerollStart}
+					onClick={() => void reroll()}
+					disabled={isRerolling}
+					aria-label="다시 굴리기"
+					className={`${roundButtonClass} bg-(--bg)`}
+				>
+					{isRerolling ? <LoaderCircle size={18} className="animate-spin" /> : <Dices size={18} />}
+				</button>
+				<button
+					type="button"
+					onClick={onToggleFavorite}
+					aria-label={isFavorite ? '즐겨찾기 해제' : '즐겨찾기'}
+					aria-pressed={isFavorite}
+					className={`${roundButtonClass} ${isFavorite ? 'bg-[#fae100]' : 'bg-(--bg)'}`}
+				>
+					<Star size={18} fill={isFavorite ? 'currentColor' : 'none'} />
+				</button>
+			</div>
+		</>
 	)
 }
