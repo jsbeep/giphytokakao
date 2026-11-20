@@ -45,6 +45,7 @@ interface DragSheetProps {
 	isFavorite: (id: string) => boolean
 	setShowHelp: (show: boolean) => void
 	moveToMid: () => void
+	onOpenSettings: () => void
 
 	// ui state
 	showHelp: boolean
@@ -80,6 +81,7 @@ export default function DragSheet({
 	showHelp,
 	setShowHelp,
 	moveToMid,
+	onOpenSettings,
 	isLoading,
 	error,
 	apiAlert,
@@ -207,6 +209,12 @@ export default function DragSheet({
 							active: isFavorite(gif.id),
 							onClick: () => onToggleFavorite(gif),
 						})}
+						onOpenSettings={onOpenSettings}
+						footer={
+							<a href="https://giphy.com" target="_blank" rel="noreferrer" aria-label="Powered by GIPHY">
+								<img src="/powered-by-giphy.png" alt="Powered by GIPHY" width={140} height={30} className="block h-auto w-35" />
+							</a>
+						}
 					/>
 				</motion.div>
 			</div>

@@ -31,6 +31,9 @@ interface GifPanelProps {
 	onHoverGif: (id: string) => void
 	onShare: (gif: GifItem) => void
 	getAction: (gif: GifItem) => GifCardAction
+	onOpenSettings?: () => void
+	/** shown under the grid when there are results, e.g. the GIPHY attribution mark */
+	footer?: ReactNode
 }
 
 /** one sliding-track panel (recent / favorites / results) – masonry grid with a shared empty/error state */
@@ -45,6 +48,8 @@ export default function GifPanel({
 	onHoverGif,
 	onShare,
 	getAction,
+	onOpenSettings,
+	footer,
 }: GifPanelProps) {
 	const columns = useMemo(() => distributeIntoColumns(items, 2), [items])
 
@@ -63,7 +68,7 @@ export default function GifPanel({
 				}
 			>
 				{error ? (
-					<ErrorMeta error={error} />
+					<ErrorMeta error={error} onOpenSettings={onOpenSettings} />
 				) : items.length === 0 ? (
 					emptyState
 				) : (
@@ -84,6 +89,9 @@ export default function GifPanel({
 					))
 				)}
 			</div>
+			{footer && !error && items.length > 0 && (
+				<div className="flex justify-center mt-[-5vh] pb-[12vh]">{footer}</div>
+			)}
 		</motion.div>
 	)
 }

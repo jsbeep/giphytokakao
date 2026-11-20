@@ -64,10 +64,16 @@ export const useKakaoShare = (options: UseKakaoShareOptions = {}) => {
       kakao.init(KAKAO_APP_KEY)
     }
 
+    const templateId = getTemplateIdForGif(gif)
+    if (!templateId) {
+      options.onError?.('카카오 메시지 템플릿 ID가 설정되지 않았습니다.')
+      return
+    }
+
     const shareParams = `?send=${encodeURIComponent(gif.id)}`
 
     kakao.Share.sendCustom({
-      templateId: getTemplateIdForGif(gif),
+      templateId,
       templateArgs: {
         web_mobile: shareParams,
         web_PC: shareParams,
@@ -75,7 +81,8 @@ export const useKakaoShare = (options: UseKakaoShareOptions = {}) => {
       },
     })
 
-    fetch(`/api/share?gifId=${encodeURIComponent(gif.id)}`, { keepalive: true }).catch(() => {
+    // counts shares only; which GIF was shared is never sent
+    fetch('/api/share', { keepalive: true }).catch(() => {
       // best-effort metric ping, ignore failures
     })
   }

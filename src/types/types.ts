@@ -13,4 +13,14 @@ export type ApiAlert = {  // API 관련
   message: string
 }
 
-export type errorType = 'NO_RESULT' | 'PLEASE_TRY_AGAIN' | 'API_KEY_MISSING' | 'RATE_LIMIT' | 'INVALID_KEY' | 'API_ERROR' | null | string;
+export type errorType =
+  | 'NO_RESULT'
+  | 'PLEASE_TRY_AGAIN'
+  | 'API_KEY_REQUIRED'
+  | 'DEFAULT_QUOTA_EXCEEDED'
+  | 'RATE_LIMIT'
+  | 'INVALID_KEY'
+  | 'INVALID_PERSONAL_KEY'
+  | 'API_ERROR'
+  | null
+  | string;

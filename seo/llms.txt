@@ -1,0 +1,12 @@
+# Old and Sick Kakao
+
+> GIF를 검색해서 탭 한 번으로 카카오톡에 공유할 수 있는 웹 앱입니다.
+
+## Pages
+
+- [홈](%VITE_SITE_URL%/): GIF 검색, 트렌딩 GIF, 즐겨찾기/최근 항목, 카카오톡 공유 기능을 제공하는 메인 페이지
+- [사이트맵](%VITE_SITE_URL%/sitemap.xml): 전체 페이지 목록
+
+## Source
+
+- [GitHub](%VITE_GITHUB_URL%): 개발자 GitHub 프로필 및 저장소

@@ -9,18 +9,22 @@ import {
 } from 'lucide-react'
 import { Analytics } from "@vercel/analytics/react"
 import DragSheet from './components/DragSheet'
-import InfoPage from './components/InfoPage'
+import SettingsPage from './components/SettingsPage'
 import { useBottomSheet } from './hooks/useBottomSheet'
 import { useGiphy } from './hooks/useGiphy'
 import { useGifStorage } from './hooks/useGifStorage'
 import { useKakaoShare } from './hooks/useKakaoShare'
+import { usePersonalApiKey } from './hooks/usePersonalApiKey'
 import DiceButton from './components/DiceButton'
 import { heroActionClass } from './components/HeroActionButton'
+
+const GITHUB_URL = import.meta.env.VITE_GITHUB_URL
 
 function App() {
   const [inputValue, setInputValue] = useState('')
   const [showHelp, setShowHelp] = useState(false)
-  const [showInfo, setShowInfo] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const { apiKey, saveApiKey, clearApiKey } = usePersonalApiKey()
   const [activeTab, setActiveTab] = useState<'recent' | 'favorites' | 'results'>(
     'results',
   )
@@ -128,6 +132,36 @@ function App() {
     void loadTrending()
   }
 
+  // after the key changes, redo whatever just failed (e.g. the default key ran out) with the new key
+  const retryFailedRequest = () => {
+    if (!error || error === 'NO_RESULT') {
+      return
+    }
+    const params = new URLSearchParams(window.location.search)
+    const sendId = params.get('send')?.trim()
+    const query = params.get('q')?.trim()
+    if (sendId) {
+      void loadGifById(sendId)
+      void loadTrending(true)
+      return
+    }
+    if (query) {
+      void runSearch(query)
+      return
+    }
+    void loadTrending()
+  }
+
+  const handleSaveApiKey = (key: string) => {
+    saveApiKey(key)
+    retryFailedRequest()
+  }
+
+  const handleClearApiKey = () => {
+    clearApiKey()
+    retryFailedRequest()
+  }
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     void runSearch(inputValue)
@@ -151,7 +185,14 @@ function App() {
         <div className="absolute right-[-3rem] top-[28vh] h-52 w-52 rounded-full bg-[rgba(20,16,8,0.08)] blur-3xl" />
       </div>
 
-      {showInfo && <InfoPage onClose={() => setShowInfo(false)} />}
+      {showSettings && (
+        <SettingsPage
+          apiKey={apiKey}
+          onSaveApiKey={handleSaveApiKey}
+          onClearApiKey={handleClearApiKey}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
       <header className="flex w-[min(100%,560px)] h-dvh flex-col gap-4">
         <div className="relative grid grid-cols-1 min-[521px]:grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
           <div className="flex min-w-0 flex-col gap-2">
@@ -169,25 +210,27 @@ function App() {
           </div>
           
           <a
-            href="#info"
+            href="#settings"
             onClick={(event) => {
               event.preventDefault()
-              setShowInfo(true)
+              setShowSettings(true)
             }}
             className="mono absolute top-0 py-[0.35rem] right-[1%] z-20 text-[0.7rem] text-(--muted) underline decoration-dotted underline-offset-3 hover:text-(--ink)"
           >
-            안내
+            설정
           </a>
           {!isSendMode &&
             <div className="flex relative flex-col justify-center items-center pt-[10dvh]">
-              <a
-                className={`${heroLinkClass} absolute bottom-10 h-8! w-8! no-select`}
-                href="https://github.com/jsb0315?tab=repositories"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Github"
-              ><img width="90%" height="90%" src="https://img.icons8.com/fluency/50/github.png" alt="github" />
-              </a>
+              {GITHUB_URL && (
+                <a
+                  className={`${heroLinkClass} absolute bottom-10 h-8! w-8! no-select`}
+                  href={GITHUB_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Github"
+                ><img width="90%" height="90%" src="https://img.icons8.com/fluency/50/github.png" alt="github" />
+                </a>
+              )}
               <DiceButton />
             </div>
           }
@@ -259,6 +302,7 @@ function App() {
           isFavorite={isFavorite}
           setShowHelp={setShowHelp}
           moveToMid={moveToMid}
+          onOpenSettings={() => setShowSettings(true)}
 
           showHelp={showHelp}
           isLoading={isLoading}
