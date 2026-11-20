@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Check } from 'lucide-react'
 
 import type { GifItem } from '../types/types'
+import { gifAspectRatio } from '../utils/giphy'
 
 /** glass pill button – colour signals on/off state, sizing/position handled by the motion wrapper around it */
 function GifActionButton({
@@ -80,6 +81,8 @@ export default function GifCard({
 					alt={gif.title}
 					loading="lazy"
 					draggable={false}
+					// reserve the height before the GIF loads, so lazy loading only fetches what's near the screen
+					style={{ aspectRatio: gifAspectRatio(gif) }}
 					className="block h-full w-full select-none object-cover"
 				/>
 				<AnimatePresence>

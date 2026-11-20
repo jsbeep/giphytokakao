@@ -58,7 +58,7 @@ npm run dev            # http://localhost:31500
 | 변수 | 범위 | 설명 |
 |---|---|---|
 | `GIPHY_API_KEY` | 서버 | 기본 키. 쉼표로 여러 개를 넣으면 한도에 걸린 키에서 다음 키로 넘어감. 비우면 기본 키 없음 |
-| `GIPHY_TREND_LIMIT` / `GIPHY_SEARCH_LIMIT` | 서버·빌드 | 트렌딩/검색 결과 개수(기본 15/8). 내 키로 직접 호출할 때도 같은 값을 씀 |
+| `GIPHY_TREND_LIMIT` / `GIPHY_SEARCH_LIMIT` | 서버·빌드 | 트렌딩/검색 1회 요청에 받을 결과 개수(기본·최대 50). 받은 결과는 스크롤할 때 나눠서 보여줌. 내 키로 직접 호출할 때도 같은 값을 씀 |
 | `DEFAULT_KEY_RATE_LIMIT` | 서버 | 제한 주기당 IP별 기본 키 요청 수(기본 30, `0`이면 기본 키 비활성화) |
 | `DEFAULT_KEY_RATE_WINDOW_SEC` | 서버 | 제한 주기(초, 기본 86400) |
 | `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | 서버 | 선택. 사용량 카운터 저장소 |

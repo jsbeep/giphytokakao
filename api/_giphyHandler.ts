@@ -7,10 +7,11 @@ import {
   type RateLimitResult,
 } from './_rateLimit.js'
 
-export const DEFAULT_TREND_LIMIT = 15
-export const DEFAULT_SEARCH_LIMIT = 8
-/** GIPHY beta keys return at most 50 results per search */
-const POOL_MAX_LIMIT = 50
+/** GIPHY beta keys return at most 50 results per request */
+export const GIPHY_MAX_LIMIT = 50
+// one request fills the whole list (quota counts requests, not results); the grid reveals it in pages
+export const DEFAULT_TREND_LIMIT = GIPHY_MAX_LIMIT
+export const DEFAULT_SEARCH_LIMIT = GIPHY_MAX_LIMIT
 const GIPHY_MAX_OFFSET = 4999
 
 const clampInt = (value: string | null, min: number, max: number, fallback: number) => {
@@ -112,7 +113,7 @@ export const handleGiphyRequest = async (
   } else if (type === 'pool') {
     // one wide search the browser keeps as a stash of dice rolls, so one quota hit covers many pops
     const q = url.searchParams.get('q') || ''
-    const limit = clampInt(url.searchParams.get('limit'), 1, POOL_MAX_LIMIT, POOL_MAX_LIMIT)
+    const limit = clampInt(url.searchParams.get('limit'), 1, GIPHY_MAX_LIMIT, GIPHY_MAX_LIMIT)
     const offset = clampInt(url.searchParams.get('offset'), 0, GIPHY_MAX_OFFSET, 0)
     buildUrl = (key) => {
       const params = new URLSearchParams({ api_key: key, q, limit: String(limit), offset: String(offset), rating: 'g' })

@@ -5,6 +5,10 @@ export const delay = (ms: number) =>
     setTimeout(resolve, ms)
   })
 
+/** width / height of the GIF, or square when GIPHY left the size out */
+export const gifAspectRatio = (gif: Pick<GifItem, 'originalWidth' | 'originalHeight'>) =>
+  gif.originalWidth > 0 && gif.originalHeight > 0 ? gif.originalWidth / gif.originalHeight : 1
+
 const normalizeTitle = (title: string) => {
   const cleaned = title.replace(/ GIF$/i, '').trim()
   return cleaned.length > 0 ? cleaned : 'Untitled'

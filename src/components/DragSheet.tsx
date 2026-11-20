@@ -10,6 +10,9 @@ import SheetHeaderActions from './SheetHeaderActions'
 import SheetSearchBar from './SheetSearchBar'
 import SheetTabs, { type SheetTab } from './SheetTabs'
 
+/** search/trending arrive up to 50 per request; the list shows this many at a time as it scrolls */
+const RESULTS_PAGE_SIZE = 12
+
 interface DragSheetProps {
 	// sheet drag
 	sheetRef: React.RefObject<HTMLElement | null>
@@ -195,6 +198,7 @@ export default function DragSheet({
 
 					<GifPanel
 						items={gifs}
+						pageSize={RESULTS_PAGE_SIZE}
 						emptyState={null}
 						error={error}
 						sheetOffset={sheetOffset}

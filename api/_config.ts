@@ -1,4 +1,4 @@
-import type { GiphyHandlerConfig } from './_giphyHandler.js'
+import { GIPHY_MAX_LIMIT, type GiphyHandlerConfig } from './_giphyHandler.js'
 import { DEFAULT_RATE_LIMIT, DEFAULT_RATE_WINDOW_SEC } from './_rateLimit.js'
 
 type Env = Record<string, string | undefined>
@@ -6,6 +6,12 @@ type Env = Record<string, string | undefined>
 export const parsePositive = (value: string | undefined) => {
   const parsed = Number(value)
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+}
+
+/** result count per GIPHY request, capped at what GIPHY returns anyway */
+const parseResultLimit = (value: string | undefined) => {
+  const parsed = parsePositive(value)
+  return parsed === undefined ? undefined : Math.min(GIPHY_MAX_LIMIT, Math.max(1, Math.floor(parsed)))
 }
 
 /** 0 is meaningful here (disables the default key), so only blank/invalid values fall back */
@@ -20,8 +26,8 @@ const parseNonNegative = (value: string | undefined, fallback: number) => {
 /** shared by the Vercel function and the Vite dev middleware so both read the same env vars */
 export const giphyConfigFromEnv = (env: Env): GiphyHandlerConfig => ({
   apiKey: env.GIPHY_API_KEY,
-  trendLimit: parsePositive(env.GIPHY_TREND_LIMIT),
-  searchLimit: parsePositive(env.GIPHY_SEARCH_LIMIT),
+  trendLimit: parseResultLimit(env.GIPHY_TREND_LIMIT),
+  searchLimit: parseResultLimit(env.GIPHY_SEARCH_LIMIT),
   rateLimit: {
     limit: parseNonNegative(env.DEFAULT_KEY_RATE_LIMIT, DEFAULT_RATE_LIMIT),
     windowSec: parsePositive(env.DEFAULT_KEY_RATE_WINDOW_SEC) ?? DEFAULT_RATE_WINDOW_SEC,
