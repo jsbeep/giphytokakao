@@ -227,7 +227,16 @@ function App() {
 
             <p className="mono w-fit rounded-full border border-(--border) bg-(--surface) px-[0.65rem] py-[0.35rem] text-[0.68rem] text-(--muted) shadow-(--sharp-shadow)">gif search / share</p>
             <h1 className="m-0 max-w-[8ch] font-(--heading-font) text-[clamp(3.1rem,16vw,5.9rem)] leading-[0.86] tracking-[-0.06em] text-balance text-(--ink)">
-              Old and <span className="inline-block italic -translate-y-[0.02em]">Sick</span> <span className="text-[#fae100] text-shadow-md text-shadow-yellow-600/25">Kakao</span>
+              {/* the title doubles as a Home button: some in-app browsers (KakaoTalk) can push the sheet off-screen */}
+              <a
+                href="/"
+                onClick={(event) => {
+                  event.preventDefault()
+                  resetToHome()
+                }}
+              >
+                Old and <span className="inline-block italic -translate-y-[0.02em]">Sick</span> <span className="text-[#fae100] text-shadow-md text-shadow-yellow-600/25">Kakao</span>
+              </a>
             </h1>
             <p className="mono w-fit text-[0.72rem] text-(--muted) opacity-[0.82]">fossil / relic / Luddite</p>
             <p className="max-w-[26ch] text-[0.92rem] text-white opacity-85">

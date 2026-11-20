@@ -31,6 +31,8 @@
   --alert: #fa342c;
 
   --spinner-border: color-mix(in srgb, var(--ink) 18%, transparent);
+  /* the height actually on screen; useBottomSheet replaces it with the visual viewport's, in px */
+  --app-height: 100dvh;
 
   font: 16px/1.5 var(--body-font);
   color: var(--ink);

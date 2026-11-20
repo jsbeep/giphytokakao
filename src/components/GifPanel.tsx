@@ -108,7 +108,13 @@ export default function GifPanel({
 		<motion.div
 			ref={scrollRef}
 			className="flex-1 overflow-y-auto"
-			animate={{ height: sheetOffset > 0 && !isDragging ? 'calc(75vh - 115px)' : 'calc(100vh - 115px)' }}
+			// same shape on both sides (a factor of --app-height) so framer-motion can tween between them
+			animate={{
+				height:
+					sheetOffset > 0 && !isDragging
+						? 'calc(var(--app-height) * 0.75 - 115px)'
+						: 'calc(var(--app-height) * 1 - 115px)',
+			}}
 			transition={{ duration: 0.25, ease: 'easeInOut' }}
 		>
 			<div

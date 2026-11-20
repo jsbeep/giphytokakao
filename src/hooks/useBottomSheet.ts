@@ -7,6 +7,22 @@ const COLLAPSED_TO_MID_THRESHOLD = 0.1
 
 type SnapLevel = 'expanded' | 'mid' | 'collapsed'
 
+/**
+ * The height actually on screen. In-app browsers (KakaoTalk) can make 100dvh / vh / innerHeight taller than
+ * what's visible, leaving the folded sheet under their toolbar; the visual viewport is what's really shown.
+ * Pinch zoom shrinks the visual viewport too, so it's only trusted at normal scale.
+ */
+const readViewportHeight = () => {
+  const viewport = window.visualViewport
+  return viewport && Math.abs(viewport.scale - 1) < 0.01 ? viewport.height : window.innerHeight
+}
+
+/** the on-screen keyboard shrinks the visual viewport; the sheet stays put while something is being typed */
+const isTyping = () => {
+  const active = document.activeElement
+  return active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement
+}
+
 type DragState = {
   active: boolean
   dragging: boolean
@@ -52,9 +68,20 @@ export const useBottomSheet = ({ onDragStart, initialLevel = 'mid' }: BottomShee
   }, [snapLevel])
 
   useEffect(() => {
+    let measuredHeight = 0
+
     const updateBounds = () => {
-      const height =
-        sheetRef.current?.getBoundingClientRect().height || window.innerHeight
+      if (measuredHeight > 0 && isTyping()) {
+        return
+      }
+      const height = Math.round(readViewportHeight())
+      if (height === measuredHeight) {
+        return
+      }
+      measuredHeight = height
+      // the sheet is sized by this (h-(--app-height)), so its offsets below match what's on screen
+      document.documentElement.style.setProperty('--app-height', `${height}px`)
+
       const nextMaxOffset = Math.max(0, height - COLLAPSED_PEEK)
       setMaxOffset(nextMaxOffset)
       const nextOffset = getOffsetForLevel(snapRef.current, nextMaxOffset)
@@ -62,8 +89,16 @@ export const useBottomSheet = ({ onDragStart, initialLevel = 'mid' }: BottomShee
     }
 
     updateBounds()
+    // in-app browsers can settle their toolbars after load without a resize event
+    const settleTimers = [300, 1000].map((ms) => window.setTimeout(updateBounds, ms))
+    const viewport = window.visualViewport
     window.addEventListener('resize', updateBounds)
-    return () => window.removeEventListener('resize', updateBounds)
+    viewport?.addEventListener('resize', updateBounds)
+    return () => {
+      settleTimers.forEach((timer) => window.clearTimeout(timer))
+      window.removeEventListener('resize', updateBounds)
+      viewport?.removeEventListener('resize', updateBounds)
+    }
   }, [])
 
   const getOffsetForLevel = (level: SnapLevel, max: number) => {

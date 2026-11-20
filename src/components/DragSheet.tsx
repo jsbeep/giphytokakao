@@ -100,9 +100,9 @@ export default function DragSheet({
 		<motion.section
 			ref={sheetRef}
 			className={[
-				// position / size
-				'fixed inset-x-0 bottom-0 mx-auto',
-				'w-[min(640px,100%)] max-w-[640px] h-[100dvh]',
+				// position / size: the visible area, from the top (bottom-0 could sit under an in-app browser's toolbar)
+				'fixed inset-x-0 top-0 mx-auto',
+				'w-[min(640px,100%)] max-w-[640px] h-(--app-height)',
 				// visual
 				'bg-(--sheet-bg) rounded-t-4xl',
 				'shadow-(--box-shadow)',
