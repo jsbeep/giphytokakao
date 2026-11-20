@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { Eye, EyeOff, LoaderCircle, Lock, Trash2, X } from 'lucide-react'
+import { ChevronDown, Eye, EyeOff, LoaderCircle, Lock, Trash2, X } from 'lucide-react'
 
 import GithubMark from './GithubMark'
 import { maskApiKey } from '../utils/apiKeyStorage'
@@ -9,7 +9,7 @@ const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL
 const GITHUB_REPO_URL = import.meta.env.VITE_GITHUB_REPO_URL
 const GIPHY_DASHBOARD_URL = 'https://developers.giphy.com/dashboard/'
 const GIPHY_API_TERMS_URL = 'https://support.giphy.com/hc/en-us/articles/360028134111-GIPHY-API-Terms-of-Service-'
-const LAST_UPDATED = '2026-11-20'
+const LAST_UPDATED = '2026-11-21'
 
 type Notice = { tone: 'ok' | 'error'; message: string } | null
 type QuotaState = DefaultKeyQuota | 'loading' | 'unavailable'
@@ -37,6 +37,19 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       <h2 className="m-0 text-base font-semibold">{title}</h2>
       {children}
     </section>
+  )
+}
+
+/** a long policy text, folded so it doesn't push the rest of Settings down; looks like a Section heading */
+function PolicyDetails({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <details className="group">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 [&::-webkit-details-marker]:hidden">
+        <h2 className="m-0 text-base font-semibold">{title}</h2>
+        <ChevronDown size={18} aria-hidden="true" className="shrink-0 text-(--muted) transition-transform duration-200 group-open:rotate-180" />
+      </summary>
+      <div className="mt-2">{children}</div>
+    </details>
   )
 }
 
@@ -296,9 +309,19 @@ export default function SettingsPage({ apiKey, onSaveApiKey, onClearApiKey, onCl
             </p>
           </Section>
 
-          <Section title="개인정보처리방침">
+          <Section title="제공 정보 / 저작권">
+            <a href="https://giphy.com" target="_blank" rel="noreferrer" className="w-fit" aria-label="Powered by GIPHY">
+              <img src="/powered-by-giphy.png" alt="Powered by GIPHY" width={160} height={34} className="block h-auto w-40" />
+            </a>
+            <p className="m-0 text-sm leading-relaxed text-(--muted)">
+              GIF 검색과 콘텐츠는 GIPHY API로 제공됩니다. 카카오톡 공유 기능은 Kakao Corp.이 제공하는 카카오 JavaScript SDK를
+              사용합니다. GIPHY, Kakao 로고와 상표권은 각 권리자에게 있습니다.
+            </p>
+          </Section>
+
+          <PolicyDetails title="개인정보처리방침">
             <BulletList>
-              <li>회원가입과 로그인이 없으며, 이름·연락처 등 개인을 식별하는 정보를 수집하지 않습니다.</li>
+              <li>이 서비스에는 자체 회원가입·로그인이 없으며, 이름·연락처 등 개인을 식별하는 정보를 수집하지 않습니다.</li>
               <li>
                 <b className="text-(--ink)">수집 항목</b>: 공유 성공 횟수, 서비스 운영 로그(요청 종류·응답 상태·시각)
               </li>
@@ -313,18 +336,24 @@ export default function SettingsPage({ apiKey, onSaveApiKey, onClearApiKey, onCl
                 <b className="text-(--ink)">API 키</b>: 사용자 브라우저에만 저장되며 운영자 서버로 전송하지 않습니다.
               </li>
               <li>
+                <b className="text-(--ink)">카카오톡 공유</b>: 공유할 때 카카오 로그인 화면이 나올 수 있습니다. 이 로그인과 받는
+                사람 선택은 카카오가 직접 처리하며, 이 서비스는 카카오 계정 정보·친구 목록·받는 사람을 전달받지 않습니다. 공유
+                준비를 위해 페이지를 열 때 카카오 SDK를 불러옵니다.
+              </li>
+              <li>
                 <b className="text-(--ink)">GIF 검색 및 공유 내용</b>: 검색어와 공유한 GIF 정보는 별도로 저장하지 않습니다.
               </li>
               <li>최근 공유·즐겨찾기 목록과 주사위용 GIF 목록은 이 기기의 브라우저 저장소(localStorage)에만 저장됩니다.</li>
               <li>
-                <b className="text-(--ink)">외부 서비스</b>: GIPHY(GIF 검색·제공), Kakao(카카오톡 공유), Vercel(호스팅·익명
-                방문 통계). 각 서비스에서 일어나는 정보 처리는 해당 회사의 개인정보처리방침을 따릅니다.
+                <b className="text-(--ink)">외부 서비스</b>: GIPHY(GIF 검색·제공), Kakao(카카오톡 공유·공유 시 카카오
+                로그인), Vercel(호스팅·익명 방문 통계). 각 서비스에서 일어나는 정보 처리는 해당 회사의 개인정보처리방침을
+                따릅니다.
               </li>
               {CONTACT_EMAIL && <li>개인정보 관련 문의나 삭제 요청은 아래 이메일로 연락해 주세요.</li>}
             </BulletList>
-          </Section>
+          </PolicyDetails>
 
-          <Section title="이용약관">
+          <PolicyDetails title="이용약관">
             <BulletList>
               <li>본 서비스는 무료로 제공되며, 운영자의 사정에 따라 사전 고지 없이 내용이 변경되거나 중단될 수 있습니다.</li>
               <li>GIF 콘텐츠의 저작권은 GIPHY 및 각 원저작자에게 있으며, 본 서비스는 검색·공유를 중개하는 도구일 뿐 콘텐츠를 직접 제작·소유하지 않습니다.</li>
@@ -339,17 +368,7 @@ export default function SettingsPage({ apiKey, onSaveApiKey, onClearApiKey, onCl
               <li>검색 결과는 GIPHY의 정책에 따라 전체 이용가(rating: g) 콘텐츠로 제한되어 있으나, 운영자는 제3자가 제공하는 콘텐츠의 정확성·적법성을 보증하지 않습니다.</li>
               <li>운영자는 관계 법령이 허용하는 범위 내에서 서비스 이용 또는 이용 불능으로 발생하는 손해에 대해 책임을 지지 않습니다.</li>
             </BulletList>
-          </Section>
-
-          <Section title="제공 정보 / 저작권">
-            <a href="https://giphy.com" target="_blank" rel="noreferrer" className="w-fit" aria-label="Powered by GIPHY">
-              <img src="/powered-by-giphy.png" alt="Powered by GIPHY" width={160} height={34} className="block h-auto w-40" />
-            </a>
-            <p className="m-0 text-sm leading-relaxed text-(--muted)">
-              GIF 검색과 콘텐츠는 GIPHY API로 제공됩니다. 카카오톡 공유 기능은 Kakao Corp.이 제공하는 카카오 JavaScript SDK를
-              사용합니다. GIPHY, Kakao 로고와 상표권은 각 권리자에게 있습니다.
-            </p>
-          </Section>
+          </PolicyDetails>
 
           {GITHUB_REPO_URL && (
             <Section title="소스 코드">
