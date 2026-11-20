@@ -110,3 +110,7 @@ src/
 <a href="https://giphy.com"><img src="public/powered-by-giphy.png" alt="Powered by GIPHY" width="200"></a>
 
 GIF 콘텐츠는 [GIPHY API](https://developers.giphy.com)로 제공되며, 저작권은 GIPHY와 각 원저작자에게 있습니다. 카카오톡 공유는 Kakao JavaScript SDK를 사용합니다.
+
+## 라이선스
+
+소스 코드는 [MIT 라이선스](LICENSE)를 따릅니다. `public/`의 이미지(GIPHY 로고, 파비콘)와 GIPHY로 제공되는 GIF는 각 권리자의 것이며, 이 라이선스에 포함되지 않습니다.
