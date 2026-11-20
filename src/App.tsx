@@ -16,6 +16,7 @@ import { useGifStorage } from './hooks/useGifStorage'
 import { useKakaoShare } from './hooks/useKakaoShare'
 import { usePersonalApiKey } from './hooks/usePersonalApiKey'
 import DiceButton from './components/DiceButton'
+import GithubMark from './components/GithubMark'
 import { heroActionClass } from './components/HeroActionButton'
 
 const GITHUB_URL = import.meta.env.VITE_GITHUB_URL
@@ -228,7 +229,8 @@ function App() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Github"
-                ><img width="90%" height="90%" src="https://img.icons8.com/fluency/50/github.png" alt="github" />
+                >
+                  <GithubMark size="90%" />
                 </a>
               )}
               <DiceButton />
