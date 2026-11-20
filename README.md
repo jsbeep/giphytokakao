@@ -66,6 +66,7 @@ npm run dev            # http://localhost:31500
 | `VITE_KAKAO_TEMPLATE_IDS` | 공개 | 카카오 메시지 템플릿 ID. 1개 또는 5개(비율 1:2, 3:4, 1:1, 4:3, 2:1 순) |
 | `VITE_SITE_URL` | 공개 | 배포 주소(끝 `/` 없이). canonical, og:url, robots.txt, sitemap.xml, llms.txt에 들어감 |
 | `VITE_GITHUB_URL` | 공개 | 선택. 홈 화면 GitHub 버튼 링크 |
+| `VITE_GITHUB_REPO_URL` | 공개 | 선택. 설정 화면 맨 아래 소스 코드(레포) 링크 |
 | `VITE_CONTACT_EMAIL` | 공개 | 선택. 설정 화면의 문의 이메일 |
 | `VITE_GOOGLE_SITE_VERIFICATION` | 공개 | 선택. Google Search Console 인증 메타 태그 |
 | `VITE_SEARCH_CACHE_LIMIT` | 공개 | 브라우저에 캐시할 최근 검색 수(5분 유지) |

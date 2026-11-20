@@ -1,10 +1,12 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { Eye, EyeOff, LoaderCircle, Lock, Trash2, X } from 'lucide-react'
 
+import GithubMark from './GithubMark'
 import { maskApiKey } from '../utils/apiKeyStorage'
 import { checkGiphyKey, fetchDefaultKeyQuota, type DefaultKeyQuota } from '../utils/giphyClient'
 
 const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL
+const GITHUB_REPO_URL = import.meta.env.VITE_GITHUB_REPO_URL
 const GIPHY_DASHBOARD_URL = 'https://developers.giphy.com/dashboard/'
 const GIPHY_API_TERMS_URL = 'https://support.giphy.com/hc/en-us/articles/360028134111-GIPHY-API-Terms-of-Service-'
 const LAST_UPDATED = '2026-11-20'
@@ -19,6 +21,15 @@ const formatResetAt = (resetAt: number) =>
   new Date(resetAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 
 const linkClass = 'font-semibold text-(--ink) underline underline-offset-2'
+
+/** "owner/repo" from a GitHub URL, for the link label */
+const repoLabel = (url: string) => {
+  try {
+    return new URL(url).pathname.replace(/^\/+|\/+$/g, '').replace(/\.git$/, '') || 'GitHub'
+  } catch {
+    return 'GitHub'
+  }
+}
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -339,6 +350,23 @@ export default function SettingsPage({ apiKey, onSaveApiKey, onClearApiKey, onCl
               사용합니다. GIPHY, Kakao 로고와 상표권은 각 권리자에게 있습니다.
             </p>
           </Section>
+
+          {GITHUB_REPO_URL && (
+            <Section title="소스 코드">
+              <a
+                href={GITHUB_REPO_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="flex w-fit items-center gap-2 rounded-full border border-(--border) bg-(--bg) px-3.5 py-2 text-sm font-semibold text-(--ink) shadow-(--sharp-shadow) -translate-x-1"
+              >
+                <GithubMark size={16} />
+                {repoLabel(GITHUB_REPO_URL)}
+              </a>
+              <p className="m-0 text-sm leading-relaxed text-(--muted)">
+                소스 코드는 MIT 라이선스로 공개되어 있습니다. 버그 제보나 제안은 GitHub 이슈로 남겨 주세요.
+              </p>
+            </Section>
+          )}
 
           <p className="m-0 text-xs text-(--muted) opacity-80">
             {CONTACT_EMAIL ? `문의: ${CONTACT_EMAIL} · ` : ''}최종 수정일 {LAST_UPDATED}

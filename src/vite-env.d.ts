@@ -10,6 +10,7 @@ interface ImportMetaEnv {
   readonly VITE_SEARCH_CACHE_LIMIT?: string
   readonly VITE_SITE_URL?: string
   readonly VITE_GITHUB_URL?: string
+  readonly VITE_GITHUB_REPO_URL?: string
   readonly VITE_CONTACT_EMAIL?: string
   readonly VITE_RANDOM_KEYWORDS?: string
 }
