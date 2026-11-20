@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Dices, House, LoaderCircle, Send, Star, X } from 'lucide-react'
+import { Dices, House, ImageOff, LoaderCircle, Send, Star, X } from 'lucide-react'
 import type { GifItem } from '../types/types'
 import { gifAspectRatio } from '../utils/giphy'
 
@@ -28,7 +28,8 @@ export interface DiceControls {
 }
 
 interface RandomGifCardProps {
-	gif: GifItem
+	/** null: a shared link whose GIF is gone, shown as a notice in the image's place */
+	gif: GifItem | null
 	/** backdrop tap, Escape and the corner button */
 	onClose: () => void
 	/**
@@ -72,20 +73,32 @@ export default function RandomGifCard({ gif, onClose, dice }: RandomGifCardProps
 				onClick={(event) => event.stopPropagation()}
 			>
 				<div className="relative overflow-hidden rounded-2xl bg-(--input-bg)">
-					<AnimatePresence mode="popLayout" initial={false}>
-						<motion.img
-							key={gif.id}
-							src={gif.previewUrl}
-							alt={gif.title}
-							draggable={false}
-							style={{ aspectRatio: gifAspectRatio(gif) }}
-							className="block max-h-[55dvh] w-full select-none object-contain"
-							initial={{ scale: 0.5, opacity: 0 }}
-							animate={{ scale: 1, opacity: 1 }}
-							exit={{ scale: 1.15, opacity: 0 }}
-							transition={{ type: 'spring', stiffness: 420, damping: 22 }}
-						/>
-					</AnimatePresence>
+					{gif ? (
+						<AnimatePresence mode="popLayout" initial={false}>
+							<motion.img
+								key={gif.id}
+								src={gif.previewUrl}
+								alt={gif.title}
+								draggable={false}
+								style={{ aspectRatio: gifAspectRatio(gif) }}
+								className="block max-h-[55dvh] w-full select-none object-contain"
+								initial={{ scale: 0.5, opacity: 0 }}
+								animate={{ scale: 1, opacity: 1 }}
+								exit={{ scale: 1.15, opacity: 0 }}
+								transition={{ type: 'spring', stiffness: 420, damping: 22 }}
+							/>
+						</AnimatePresence>
+					) : (
+						<div className="flex aspect-4/3 w-full flex-col items-center justify-center gap-3 px-6 text-center">
+							<div className="grid h-14 w-14 place-items-center rounded-full bg-(--surface-strong) text-(--accent)">
+								<ImageOff size={30} aria-hidden="true" />
+							</div>
+							<div className="flex flex-col gap-1">
+								<strong className="text-base leading-tight text-(--ink)">없는 GIF예요</strong>
+								<p className="m-0 text-sm leading-snug text-(--muted)">삭제됐거나 잘못된 링크예요.</p>
+							</div>
+						</div>
+					)}
 					<button
 						type="button"
 						onClick={onClose}
@@ -96,7 +109,7 @@ export default function RandomGifCard({ gif, onClose, dice }: RandomGifCardProps
 					</button>
 				</div>
 
-				{dice && <DiceCardControls gif={gif} {...dice} />}
+				{gif && dice && <DiceCardControls gif={gif} {...dice} />}
 			</motion.div>
 		</motion.div>
 	)

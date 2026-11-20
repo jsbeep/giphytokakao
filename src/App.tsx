@@ -95,18 +95,23 @@ function App() {
     addRecent(gif)
   }
 
-  // a shared link pops its GIF in the dice's card over the home screen; Home (or closing it) leaves the link
-  const [sharedGif, setSharedGif] = useState<GifItem | null>(null)
+  // a shared link pops its GIF in the dice's card over the home screen (gif null: that GIF is gone);
+  // Home, or closing the card, leaves the link
+  const [sharedCard, setSharedCard] = useState<{ gif: GifItem | null } | null>(null)
 
   const openSharedGif = async (gifId: string) => {
-    const gif = await loadGifById(gifId)
-    if (!gif) {
+    const result = await loadGifById(gifId)
+    if (result === null) {
+      // key / quota / network problems show in the sheet instead
       return
     }
-    await preloadImage(gif.previewUrl)
+    const gif = result === 'GIF_NOT_FOUND' ? null : result
+    if (gif) {
+      await preloadImage(gif.previewUrl)
+    }
     // the visitor may have gone home or searched while it loaded
     if (readSendId() === gifId) {
-      setSharedGif(gif)
+      setSharedCard({ gif })
     }
   }
 
@@ -131,7 +136,7 @@ function App() {
 
   const resetToHome = () => {
     setActiveTab('results')
-    setSharedGif(null)
+    setSharedCard(null)
     setInputValue('')
     setShowHelp(false)
     updateUrl('')
@@ -211,7 +216,7 @@ function App() {
             }}
           />
         )}
-        {sharedGif && <RandomGifCard key="shared-gif" gif={sharedGif} onClose={resetToHome} />}
+        {sharedCard && <RandomGifCard key="shared-gif" gif={sharedCard.gif} onClose={resetToHome} />}
       </AnimatePresence>
       <header className="flex w-[min(100%,560px)] h-dvh flex-col gap-4">
         <div className="relative grid grid-cols-1 min-[521px]:grid-cols-[minmax(0,1fr)_auto] items-end gap-4">

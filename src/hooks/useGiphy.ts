@@ -148,21 +148,23 @@ export const useGiphy = (options: UseGiphyOptions = {}) => {
     }
   }
 
-  /** one GIF by id (a shared link's); null when it can't be loaded, with the error shown like the loaders above */
-  const loadGifById = async (gifId: string): Promise<GifItem | null> => {
+  /**
+   * One GIF by id (a shared link's). 'GIF_NOT_FOUND' when GIPHY has no such GIF (deleted, or a broken link),
+   * with no error shown; null on any other failure, with the error shown like the loaders above.
+   */
+  const loadGifById = async (gifId: string): Promise<GifItem | 'GIF_NOT_FOUND' | null> => {
     setError(null)
     setApiAlert(null)
 
     try {
       const result = await fetchGiphy({ type: 'gif', id: gifId })
+      // GIPHY answers 404 for an unknown id and 400 for a malformed one; /api/giphy passes both through
+      if (result.response.status === 404 || result.response.status === 400) {
+        return 'GIF_NOT_FOUND'
+      }
       await handleApiResponse(result)
       const json = await result.response.json()
-      const item = mapGifs([json.data || {}], true)[0]
-      if (!item) {
-        setError('NO_RESULT')
-        return null
-      }
-      return item
+      return mapGifs([json.data || {}], true)[0] ?? 'GIF_NOT_FOUND'
     } catch (err) {
       setError(err instanceof Error ? err.message : 'PLEASE_TRY_AGAIN')
       return null
