@@ -19,13 +19,15 @@ type DragState = {
 
 type BottomSheetOptions = {
   onDragStart?: () => void
+  /** where the sheet rests once its size is first measured */
+  initialLevel?: SnapLevel
 }
 
-export const useBottomSheet = ({ onDragStart }: BottomSheetOptions = {}) => {
+export const useBottomSheet = ({ onDragStart, initialLevel = 'mid' }: BottomSheetOptions = {}) => {
   const [sheetOffset, setSheetOffset] = useState(-10)
   const [maxOffset, setMaxOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
-  const [snapLevel, setSnapLevel] = useState<SnapLevel>('mid')
+  const [snapLevel, setSnapLevel] = useState<SnapLevel>(initialLevel)
 
   const sheetRef = useRef<HTMLElement | null>(null)
   const gridRef = useRef<HTMLDivElement | null>(null)

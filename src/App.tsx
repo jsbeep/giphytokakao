@@ -5,7 +5,8 @@ import {
   type FormEvent,
 } from 'react'
 import { Analytics } from "@vercel/analytics/react"
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
+import { House } from 'lucide-react'
 import DragSheet from './components/DragSheet'
 import RandomGifCard from './components/RandomGifCard'
 import SettingsPage from './components/SettingsPage'
@@ -23,11 +24,8 @@ import { preloadImage } from './utils/giphy'
 
 const GITHUB_URL = import.meta.env.VITE_GITHUB_URL
 
-/** the GIF id a shared KakaoTalk link carries (?send=<id>) */
-const readSendId = () => {
-  const sendParam = new URLSearchParams(window.location.search).get('send')?.trim() || ''
-  return sendParam ? decodeURIComponent(sendParam) : ''
-}
+/** the GIF id a shared KakaoTalk link carries (?send=<id>), already percent-decoded by URLSearchParams */
+const readSendId = () => new URLSearchParams(window.location.search).get('send')?.trim() || ''
 
 function App() {
   const [inputValue, setInputValue] = useState('')
@@ -38,7 +36,10 @@ function App() {
     'results',
   )
   const inputRef = useRef<HTMLInputElement | null>(null)
+  // came in through a shared link (?send=<id>): lasts until the URL moves on (Home, a search)
+  const [isSharedVisit, setIsSharedVisit] = useState(() => Boolean(readSendId()))
   const updateUrl = (query: string) => {
+    setIsSharedVisit(false)
     const url = new URL(window.location.href)
     url.pathname = '/'
     url.search = query ? `?q=${encodeURIComponent(query)}` : ''
@@ -70,6 +71,8 @@ function App() {
     finishDrag,
   } = useBottomSheet({
     onDragStart: () => inputRef.current?.blur(),
+    // a shared link opens on its GIF, with the sheet folded away below
+    initialLevel: isSharedVisit ? 'collapsed' : 'mid',
   })
 
   const { handleShare } = useKakaoShare({ onError: setError })
@@ -242,20 +245,36 @@ function App() {
           >
             설정
           </a>
-          <div className="flex relative flex-col justify-center items-center pt-[10dvh]">
-            {GITHUB_URL && (
-              <a
-                className={`${heroLinkClass} absolute bottom-10 h-8! w-8! no-select`}
-                href={GITHUB_URL}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Github"
+          {isSharedVisit ? (
+            // behind the shared GIF's card: some in-app browsers push the folded sheet off-screen, so this
+            // keeps a way home if the card isn't up (still loading, or a key/quota error)
+            <div className="pointer-events-none fixed inset-0 grid place-items-center">
+              <motion.button
+                type="button"
+                onClick={resetToHome}
+                aria-label="홈으로"
+                className="pointer-events-auto grid h-16 w-16 cursor-pointer place-items-center rounded-full border border-(--border-strong) bg-[linear-gradient(135deg,rgba(255,255,255,0.78),rgba(255,255,255,0.22))] text-(--ink) shadow-md backdrop-blur-md"
+                whileTap={{ scale: 0.92 }}
               >
-                <GithubMark size="90%" />
-              </a>
-            )}
-            <DiceButton onChargeStart={randomGifs.prefetch} onPop={popRandomGif} />
-          </div>
+                <House size={28} />
+              </motion.button>
+            </div>
+          ) : (
+            <div className="flex relative flex-col justify-center items-center pt-[10dvh]">
+              {GITHUB_URL && (
+                <a
+                  className={`${heroLinkClass} absolute bottom-10 h-8! w-8! no-select`}
+                  href={GITHUB_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Github"
+                >
+                  <GithubMark size="90%" />
+                </a>
+              )}
+              <DiceButton onChargeStart={randomGifs.prefetch} onPop={popRandomGif} />
+            </div>
+          )}
         </div>
         <div className="h-[15dvh]" />
       </header>
