@@ -42,7 +42,7 @@ export type GifCardAction = {
 	onClick: () => void
 }
 
-/** masonry gif tile – tap to share, hover reveals actions in sync with the image shrink, touch-first send feedback */
+/** masonry gif tile – tap to share, mouse hover (or the tap itself, on touch) reveals actions in sync with the image shrink, touch-first send feedback */
 export default function GifCard({
 	gif,
 	isSending,
@@ -63,11 +63,21 @@ export default function GifCard({
 	return (
 		<div
 			className="relative flex flex-col"
-			onPointerEnter={onHover}
+			// mouse only: a touch reaching here at touchstart would reveal the action button mid-tap, and iOS WebKit
+			// then treats the tap as a hover and drops the click, so the share would need a second tap
+			onPointerEnter={(e) => {
+				if (e.pointerType === 'mouse') {
+					onHover()
+				}
+			}}
 		>
 			<motion.button
 				type="button"
-				onClick={onShare}
+				// touch has no hover: the tapped gif keeps its action button, so it can be starred right after sending
+				onClick={() => {
+					onHover()
+					onShare()
+				}}
 				animate={{ scale: isSending ? 1.01 : isHovered ? 1.03 : 1 }}
 				whileTap={{ scale: 1.03 }}
 				transition={{ duration: 0.2, ease: 'easeOut' }}

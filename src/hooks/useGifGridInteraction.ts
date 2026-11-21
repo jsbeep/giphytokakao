@@ -8,7 +8,7 @@ type UseGifGridInteractionOptions = {
   onAddRecent: (gif: GifItem) => void
 }
 
-/** touch-first share feedback + sticky hover for the gif grid: highlights the tapped gif until the send call lands, keeps the last-hovered gif's actions visible until another gif is hovered */
+/** touch-first share feedback + sticky hover for the gif grid: highlights the tapped gif until the send call lands, keeps the last-hovered (or, on touch, last-tapped) gif's actions visible until another gif takes over */
 export const useGifGridInteraction = ({ onShareGif, onAddRecent }: UseGifGridInteractionOptions) => {
   const [sendingGifId, setSendingGifId] = useState<string | null>(null)
   const [hoveredGifId, setHoveredGifId] = useState<string | null>(null)
