@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react'
 import { motion } from 'framer-motion'
-import { Clock, Star, X } from 'lucide-react'
+import { Clock, Star } from 'lucide-react'
 
 import type { GifItem, ApiAlert, errorType } from '../types/types'
 import { useGifGridInteraction } from '../hooks/useGifGridInteraction'
@@ -43,7 +43,6 @@ interface DragSheetProps {
 	// actions
 	onShareGif: (gif: GifItem) => void
 	onAddRecent: (gif: GifItem) => void
-	onRemoveRecent: (id: string) => void
 	onToggleFavorite: (gif: GifItem) => void
 	isFavorite: (id: string) => boolean
 	setShowHelp: (show: boolean) => void
@@ -78,7 +77,6 @@ export default function DragSheet({
 	favorites,
 	onShareGif,
 	onAddRecent,
-	onRemoveRecent,
 	onToggleFavorite,
 	isFavorite,
 	showHelp,
@@ -174,12 +172,6 @@ export default function DragSheet({
 						hoveredGifId={hoveredGifId}
 						onHoverGif={onHoverGif}
 						onShare={(gif) => shareWithFeedback(gif)}
-						getAction={(gif) => ({
-							label: '최근 공유 제거',
-							icon: <X size={16} />,
-							active: false,
-							onClick: () => onRemoveRecent(gif.id),
-						})}
 					/>
 
 					<GifPanel

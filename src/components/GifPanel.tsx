@@ -34,7 +34,8 @@ interface GifPanelProps {
 	hoveredGifId: string | null
 	onHoverGif: (id: string) => void
 	onShare: (gif: GifItem) => void
-	getAction: (gif: GifItem) => GifCardAction
+	/** the corner button on each gif; without it the tiles have none */
+	getAction?: (gif: GifItem) => GifCardAction
 	onOpenSettings?: () => void
 	/** shown under the grid when there are results, e.g. the GIPHY attribution mark */
 	footer?: ReactNode
@@ -140,7 +141,7 @@ export default function GifPanel({
 									isHovered={hoveredGifId === gif.id}
 									onHover={() => onHoverGif(gif.id)}
 									onShare={() => onShare(gif)}
-									action={getAction(gif)}
+									action={getAction?.(gif)}
 								/>
 							))}
 						</div>

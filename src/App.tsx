@@ -80,7 +80,6 @@ function App() {
     recent,
     favorites,
     addRecent,
-    removeRecent,
     toggleFavorite,
     isFavorite,
   } = useGifStorage()
@@ -325,7 +324,6 @@ function App() {
 
           onShareGif={handleShare}
           onAddRecent={addRecent}
-          onRemoveRecent={removeRecent}
           onToggleFavorite={toggleFavorite}
           isFavorite={isFavorite}
           setShowHelp={setShowHelp}

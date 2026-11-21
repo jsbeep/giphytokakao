@@ -21,10 +21,6 @@ export const useGifStorage = (options: UseGifStorageOptions = {}) => {
     setRecent(gifStorage.addRecent(gif, recentLimit))
   }
 
-  const removeRecent = (gifId: string) => {
-    setRecent(gifStorage.removeRecent(gifId))
-  }
-
   const addFavorite = (gif: GifItem) => {
     setFavorites(gifStorage.addFavorite(gif, favoritesLimit))
   }
@@ -56,7 +52,6 @@ export const useGifStorage = (options: UseGifStorageOptions = {}) => {
     recent,
     favorites,
     addRecent,
-    removeRecent,
     addFavorite,
     removeFavorite,
     toggleFavorite,

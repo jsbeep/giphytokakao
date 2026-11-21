@@ -57,9 +57,9 @@ export default function GifCard({
 	isHovered: boolean
 	onHover: () => void
 	onShare: () => void
-	action: GifCardAction
+	action?: GifCardAction
 }) {
-	const showAction = action.active || isHovered
+	const showAction = action !== undefined && (action.active || isHovered)
 	const isSending = sendStatus !== null
 
 	return (
