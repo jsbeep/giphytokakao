@@ -6,7 +6,7 @@ import {
 } from 'react'
 import { Analytics } from "@vercel/analytics/react"
 import { AnimatePresence, motion } from 'framer-motion'
-import { House } from 'lucide-react'
+import { House, Loader2 } from 'lucide-react'
 import DragSheet from './components/DragSheet'
 import RandomGifCard from './components/RandomGifCard'
 import SettingsPage from './components/SettingsPage'
@@ -255,18 +255,29 @@ function App() {
             설정
           </a>
           {isSharedVisit ? (
-            // behind the shared GIF's card: some in-app browsers push the folded sheet off-screen, so this
-            // keeps a way home if the card isn't up (still loading, or a key/quota error)
+            // where the shared GIF's card will pop: a spinner while it loads. If the load fails (key / quota /
+            // network, shown in the sheet) the card never comes, so a Home button takes its place: some in-app
+            // browsers push the folded sheet off-screen
             <div className="pointer-events-none fixed inset-0 grid place-items-center">
-              <motion.button
-                type="button"
-                onClick={resetToHome}
-                aria-label="홈으로"
-                className="pointer-events-auto grid h-16 w-16 cursor-pointer place-items-center rounded-full border border-(--border-strong) bg-[linear-gradient(135deg,rgba(255,255,255,0.78),rgba(255,255,255,0.22))] text-(--ink) shadow-md backdrop-blur-md"
-                whileTap={{ scale: 0.92 }}
-              >
-                <House size={28} />
-              </motion.button>
+              {sharedCard ? null : error ? (
+                <motion.button
+                  type="button"
+                  onClick={resetToHome}
+                  aria-label="홈으로"
+                  className="pointer-events-auto grid h-16 w-16 cursor-pointer place-items-center rounded-full border border-(--border-strong) bg-[linear-gradient(135deg,rgba(255,255,255,0.78),rgba(255,255,255,0.22))] text-(--ink) shadow-md backdrop-blur-md"
+                  whileTap={{ scale: 0.92 }}
+                >
+                  <House size={28} />
+                </motion.button>
+              ) : (
+                <div
+                  role="status"
+                  aria-label="공유받은 GIF 불러오는 중"
+                  className="grid h-16 w-16 place-items-center rounded-full border border-(--border-strong) bg-[linear-gradient(135deg,rgba(255,255,255,0.78),rgba(255,255,255,0.22))] text-(--ink) shadow-md backdrop-blur-md"
+                >
+                  <Loader2 size={28} className="animate-spin" />
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex relative flex-col justify-center items-center pt-[10dvh]">

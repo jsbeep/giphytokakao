@@ -112,6 +112,9 @@ export default function DragSheet({
 				'touch-none cursor-grab',
 				isDragging ? 'select-none' : '',
 			].join(' ')}
+			// first frame already at the bottom (95%, before the screen is measured): without initial={false} framer-motion
+			// mounts it at y 0 – fully open – and then slides it down to where it should rest
+			initial={false}
 			animate={{ y: sheetOffset < 0 ? '95%' : sheetOffset }}
 			transition={isDragging ? { duration: 0 } : { duration: 0.25, ease: 'easeInOut' }}
 			onPointerMove={handlePointerMove}
