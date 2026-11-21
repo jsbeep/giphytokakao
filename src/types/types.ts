@@ -7,6 +7,11 @@ export type GifItem = {
   originalHeight: number
 }
 
+/** feedback on a tapped gif: a spinner while the share sheet comes up, then a check */
+export type GifSendStatus = 'sending' | 'sent'
+
+export type GifSendState = { id: string; status: GifSendStatus }
+
 export type ApiAlert = {  // API 관련
   type: 'limit' | 'invalid'
   title: string

@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check } from 'lucide-react'
+import { Check, Loader2 } from 'lucide-react'
 
-import type { GifItem } from '../types/types'
+import type { GifItem, GifSendStatus } from '../types/types'
 import { gifAspectRatio } from '../utils/giphy'
 
 /** glass pill button – colour signals on/off state, sizing/position handled by the motion wrapper around it */
@@ -45,20 +45,22 @@ export type GifCardAction = {
 /** masonry gif tile – tap to share, mouse hover (or the tap itself, on touch) reveals actions in sync with the image shrink, touch-first send feedback */
 export default function GifCard({
 	gif,
-	isSending,
+	sendStatus,
 	isHovered,
 	onHover,
 	onShare,
 	action,
 }: {
 	gif: GifItem
-	isSending: boolean
+	/** null when this gif isn't the one being sent */
+	sendStatus: GifSendStatus | null
 	isHovered: boolean
 	onHover: () => void
 	onShare: () => void
 	action: GifCardAction
 }) {
 	const showAction = action.active || isHovered
+	const isSending = sendStatus !== null
 
 	return (
 		<div
@@ -110,7 +112,19 @@ export default function GifCard({
 								transition={{ duration: 0.18, ease: 'easeOut' }}
 								className="grid h-10 w-10 place-items-center rounded-full bg-(--accent) text-white shadow-(--soft-shadow)"
 							>
-								<Check size={20} />
+								{/* initial off: the first icon rides in with the circle's own pop */}
+								<AnimatePresence mode="wait" initial={false}>
+									<motion.span
+										key={sendStatus}
+										initial={{ scale: 0.5, opacity: 0 }}
+										animate={{ scale: 1, opacity: 1 }}
+										exit={{ scale: 0.5, opacity: 0 }}
+										transition={{ duration: 0.15, ease: 'easeOut' }}
+										className="grid place-items-center"
+									>
+										{sendStatus === 'sending' ? <Loader2 size={20} className="animate-spin" /> : <Check size={20} />}
+									</motion.span>
+								</AnimatePresence>
 							</motion.div>
 						</motion.div>
 					)}

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 
-import type { errorType, GifItem } from '../types/types'
+import type { errorType, GifItem, GifSendState } from '../types/types'
 import { gifAspectRatio } from '../utils/giphy'
 import ErrorMeta from './ErrorMeta'
 import GifCard, { type GifCardAction } from './GifCard'
@@ -30,7 +30,7 @@ interface GifPanelProps {
 	error?: errorType
 	sheetOffset: number
 	isDragging: boolean
-	sendingGifId: string | null
+	sendState: GifSendState | null
 	hoveredGifId: string | null
 	onHoverGif: (id: string) => void
 	onShare: (gif: GifItem) => void
@@ -52,7 +52,7 @@ export default function GifPanel({
 	error,
 	sheetOffset,
 	isDragging,
-	sendingGifId,
+	sendState,
 	hoveredGifId,
 	onHoverGif,
 	onShare,
@@ -136,7 +136,7 @@ export default function GifPanel({
 								<GifCard
 									key={gif.id}
 									gif={gif}
-									isSending={sendingGifId === gif.id}
+									sendStatus={sendState?.id === gif.id ? sendState.status : null}
 									isHovered={hoveredGifId === gif.id}
 									onHover={() => onHoverGif(gif.id)}
 									onShare={() => onShare(gif)}

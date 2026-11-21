@@ -91,7 +91,7 @@ export default function DragSheet({
 }: DragSheetProps) {
 	const tabIndex = activeTab === 'recent' ? 0 : activeTab === 'favorites' ? 1 : 2
 
-	const { sendingGifId, hoveredGifId, onHoverGif, shareWithFeedback } = useGifGridInteraction({
+	const { sendState, hoveredGifId, onHoverGif, shareWithFeedback } = useGifGridInteraction({
 		onShareGif,
 		onAddRecent,
 	})
@@ -167,7 +167,7 @@ export default function DragSheet({
 						emptyState={<div className="text-[48px] opacity-70" aria-hidden="true"><Clock size={56} /></div>}
 						sheetOffset={sheetOffset}
 						isDragging={isDragging}
-						sendingGifId={sendingGifId}
+						sendState={sendState}
 						hoveredGifId={hoveredGifId}
 						onHoverGif={onHoverGif}
 						onShare={(gif) => shareWithFeedback(gif)}
@@ -184,7 +184,7 @@ export default function DragSheet({
 						emptyState={<div className="text-[48px] opacity-70" aria-hidden="true"><Star size={56} /></div>}
 						sheetOffset={sheetOffset}
 						isDragging={isDragging}
-						sendingGifId={sendingGifId}
+						sendState={sendState}
 						hoveredGifId={hoveredGifId}
 						onHoverGif={onHoverGif}
 						onShare={(gif) => shareWithFeedback(gif)}
@@ -203,7 +203,7 @@ export default function DragSheet({
 						error={error}
 						sheetOffset={sheetOffset}
 						isDragging={isDragging}
-						sendingGifId={sendingGifId}
+						sendState={sendState}
 						hoveredGifId={hoveredGifId}
 						onHoverGif={onHoverGif}
 						onShare={(gif) => shareWithFeedback(gif, true)}
